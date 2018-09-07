@@ -29,8 +29,10 @@ def link_title(n):
 
 #-------global changes variables------------
 
+#count of while for anti-flood
 exc_timer = 900
 
+# install min & max timer vote
 min_timer = 30
 max_timer = 300
 
@@ -130,7 +132,7 @@ while True:
         if 'PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' in data:
             send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
             send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например (пишем \
-без кавычек: \"!опрос 60 сек Вы любите ониме?\"\r\n' %(name))
+без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писат ьвремя, то время установится на 60 сек\r\n' %(name))
             send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать можно и в приват боту\r\n' %(name))
             send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))        
@@ -233,40 +235,34 @@ while True:
         except:
             send('PRIVMSG %s :Ooops! Maybe Title is no :>\r\n'%(channel))
 
-        #---------voting--------------------------------  
-
-        # install min & max timer vote
+        #---------voting--------------------------------          
                     
-        t = time.time()
-        if 'PRIVMSG '+channel+' :!опрос ' in data and 'сек' not in data:
-            send('PRIVMSG %s :Вы забыли ввести время опроса, структура такова: \"!опрос [цифра в секундах]сек [текст вопроса] \
-". Пример: \"!опрос 60 сек Вы любите ониме?\" \r\n'%(channel))
-            continue
-        
-        if 'PRIVMSG '+channel+' :!опрос ' in data and 'сек' in data:            
+        t = time.time()   
+        if '!стоп опрос' in data and 'PRIVMSG' in data and name == masterName:
+            t2 = 0
+            print('счетчик опроса сброшен хозяином!')
+        if 'PRIVMSG '+channel+' :!опрос ' in data:            
             if t2 == 0 or t > t2+time_vote:
-                try:
-                    time_vote = int(message.split('!опрос',1)[1].split('сек',1)[0]) # get time of timer from user message
-                    if min_timer>time_vote or max_timer<time_vote:
-                        send('PRIVMSG %s :Ошибка ввода таймера голования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
-                        continue
-                except:
-                    send('PRIVMSG %s :что то пошло не так, напишите: !помощь\r\n'%(channel))
-                    print('ERROR in voting')
-                try:
-                    t2 = time.time()        
-                    message_voting = message.split('!опрос ',1)[1].split(' сек',1)[1].split(' ',1)[1].split('\r',1)[0]  # Make variable - text-voting-title form massage      
-                    count_vote_plus = 0
-                    count_vote_minus = 0
-                    vote_all = 0
-                    count_voting = 0
-                    list_vote_ip = []
-                    dict_voted = {}  # Обнуляет массив голосования
-                    send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти %d секунд. Что бы ответить "да" пишите: \"!да\" \
+                if 'сек' not in data:
+                    time_vote = 60
+                    message_voting = message.split('!опрос',1)[1].strip()  # Make variable - text-voting-title form massage
+                else:    
+                    time_vote = int(message.split('!опрос',1)[1].split('сек',1)[0].strip()) # get time of timer from user message
+                    message_voting = message.split('!опрос',1)[1].split('сек',1)[1].strip()  # Make variable - text-voting-title form massage
+                if min_timer>time_vote or max_timer<time_vote:
+                    send('PRIVMSG %s :Ошибка ввода таймера голования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
+                    continue
+                
+                t2 = time.time()
+                count_vote_plus = 0
+                count_vote_minus = 0
+                vote_all = 0
+                count_voting = 0
+                list_vote_ip = []
+                dict_voted = {}  # Обнуляет массив голосования
+                send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти %d секунд. Что бы ответить "да" пишите: \"!да\" \
 ", что бы ответить "нет" пишите: \"!нет\". Писать можно как открыто в канал, так и в приват боту, что бы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
-                    list_vote_ip = []
-                except:
-                    send('PRIVMSG %s :что то пошло не так, напишите: !помощь\r\n'%(channel))    
+                list_vote_ip = []   
                     
         # if find '!да' count +1    
         if data.find ( 'PRIVMSG '+channel+' :!да' ) != -1 or data.find ( 'PRIVMSG '+botName+' :!да' ) != -1:
