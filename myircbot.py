@@ -7,6 +7,7 @@ def send(mes):
   return irc.send(bytes(mes,'utf-8'))
 
 #function of parcing of get TITLE from link
+
 def link_title(n):  
     if 'http://' in n or 'https://' in n:
         link = n.split('//',1)[1].split(' ',1)[0].rstrip()
@@ -16,19 +17,22 @@ def link_title(n):
 
     get_title = requests.get('http://%s'%(link), timeout = 10)
     txt_title = get_title.text
-    if '<TITLE>' in txt_title or '<title>' in txt_title or '<Title>' in txt_title:
-        if '<TITLE>' in txt_title:
-            title = '\x02TITLE\x02 of www.'+link+': '+txt_title.split('<TITLE>',1)[1].split('</TITLE>',1)[0]
-        elif '<title>' in txt_title:
-            title = '\x02TITLE\x02 of www.'+link+': '+txt_title.split('<title>',1)[1].split('</title>',1)[0]
-        elif '<Title>' in txt_title:
-            title = '\x02TITLE\x02 of www.'+link+': '+txt_title.split('<Title>',1)[1].split('</Title>',1)[0]
+    if '</TITLE>' in txt_title or '</title>' in txt_title or '</Title>' in txt_title:        
+        if '</TITLE>' in txt_title:
+            title = '\x02Title\x02 of '+link+': '+txt_title.split('</TITLE>',1)[0].split('>')[-1]
+        elif '</title>' in txt_title:
+            title = '\x02Title\x02 of '+link+': '+txt_title.split('</title>',1)[0].split('>')[-1]
+        elif '</Title>' in txt_title:
+            title = '\x02Title\x02 of '+link+': '+txt_title.split('</Title>',1)[0].split('>')[-1]                
 
-    return title
+    return title.replace('\r','').replace('\n','').replace('www.','').replace('http://','').replace('https://','').strip()
 
 #-------global changes variables------------
 
 exc_timer = 900
+
+min_timer = 30
+max_timer = 300
 
 #-------connect server----------------------
 
@@ -83,8 +87,7 @@ whois_ip_get_text = ''
 
 timer_exc = 0
 time_exc = 0
-min_timer = 30
-max_timer = 300
+
 where_mes_exc = ''
 t2 = 0
 lock_mes_ready = True
@@ -223,10 +226,12 @@ while True:
                 send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес из цифер, разделенных точками! Или существующий ник!\r\n')
                          
         #---------info from link in channel-------------
-
-        if 'PRIVMSG %s :'%(channel) in data: 
-            if 'http://' in data or 'https://' in data or 'www.' in data:
-                send('PRIVMSG %s : %s\r\n'%(channel,link_title(data)))
+        try:
+            if 'PRIVMSG %s :'%(channel) in data: 
+                if 'http://' in data or 'https://' in data or 'www.' in data:
+                    send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
+        except:
+            send('PRIVMSG %s :Ooops! Maybe Title is no :>\r\n'%(channel))
 
         #---------voting--------------------------------  
 
