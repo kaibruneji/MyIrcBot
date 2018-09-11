@@ -233,7 +233,7 @@ while True:
                 if 'http://' in data or 'https://' in data or 'www.' in data:
                     send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
         except:
-            send('PRIVMSG %s :Ooops! Maybe Title is no :>\r\n'%(channel))
+            print('Is no title')
 
         #---------voting--------------------------------          
                     
