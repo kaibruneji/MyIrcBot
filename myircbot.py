@@ -243,12 +243,17 @@ while True:
             print('счетчик опроса сброшен хозяином!')
         if 'PRIVMSG '+channel+' :!опрос ' in data:            
             if t2 == 0 or t > t2+time_vote:
-                if 'сек' not in data:
+                if ' сек ' not in data:
                     time_vote = 60
                     message_voting = message.split('!опрос',1)[1].strip()  # Make variable - text-voting-title form massage
-                else:    
-                    time_vote = int(message.split('!опрос',1)[1].split('сек',1)[0].strip()) # get time of timer from user message
-                    message_voting = message.split('!опрос',1)[1].split('сек',1)[1].strip()  # Make variable - text-voting-title form massage
+                if ' сек ' in data:
+                    try:
+                        time_vote = int(message.split('!опрос',1)[1].split('сек',1)[0].strip()) # get time of timer from user message
+                        message_voting = message.split('!опрос',1)[1].split('сек',1)[1].strip()  # Make variable - text-voting-title form massage
+                    except:
+                        time_vote = 60
+                        message_voting = message.split('!опрос',1)[1].strip()  # Make variable - text-voting-title form massage
+
                 if min_timer>time_vote or max_timer<time_vote:
                     send('PRIVMSG %s :Ошибка ввода таймера голования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
                     continue
