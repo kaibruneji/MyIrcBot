@@ -1,5 +1,7 @@
 import socket, sys, time, requests, signal # Import modules
 
+from urllib.parse import unquote
+
 #-------functions---------------------------
 
 #function shortening of ic.send...
@@ -15,15 +17,16 @@ def link_title(n):
     elif 'www.' in n:
         link = n.split('www.',1)[1].split(' ',1)[0].rstrip()
 
+    unquoted_link = unquote(link)
     get_title = requests.get('http://%s'%(link), timeout = 10)
     txt_title = get_title.text
     if '</TITLE>' in txt_title or '</title>' in txt_title or '</Title>' in txt_title:        
         if '</TITLE>' in txt_title:
-            title = '\x02Title\x02 of '+link+': '+txt_title.split('</TITLE>',1)[0].split('>')[-1]
+            title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</TITLE>',1)[0].split('>')[-1]
         elif '</title>' in txt_title:
-            title = '\x02Title\x02 of '+link+': '+txt_title.split('</title>',1)[0].split('>')[-1]
+            title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</title>',1)[0].split('>')[-1]
         elif '</Title>' in txt_title:
-            title = '\x02Title\x02 of '+link+': '+txt_title.split('</Title>',1)[0].split('>')[-1]                
+            title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</Title>',1)[0].split('>')[-1]
 
     return title.replace('\r','').replace('\n','').replace('www.','').replace('http://','').replace('https://','').strip()
 
