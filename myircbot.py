@@ -44,12 +44,9 @@ def link_title(n):
 
             return title.replace('\r','').replace('\n','').replace('www.','').replace('http://','').replace('https://','').strip()
         else:
-            return 'Title is NO!'
+            return 'Title is no'
           
 #-------global changes variables------------
-
-#count of while for anti-flood
-exc_timer = 900
 
 # install min & max timer vote
 min_timer = 30
@@ -335,47 +332,39 @@ while True:
     
     #---------Exchange-------------
 
-    # get exchange from internet API at regular time  
-    time_exc = time.time()
-    if timer_exc == 0 or time_exc - timer_exc >= exc_timer or name == masterName and '!обновить курс' in message:
+    # get exchange from internet API at regular time
+     
+    if 'PRIVMSG '+channel+' :!курс' in data or 'PRIVMSG '+botName+' :!курс' in data:        
+        if 'PRIVMSG '+channel+' :!курс' in data:
+            where_mes_exc = channel
+        if 'PRIVMSG '+botName+' :!курс' in data:
+            where_mes_exc = name
+
         try:
-            btc_usd_su = requests.get('https://free.currencyconverterapi.com/api/v6/convert?q=BTC_USD&compact=y', timeout = 5)
-            btc_usd = btc_usd_su.text.split('val":',1)[1].split('}',1)[0][0:]
+            api_exc_get = requests.get('https://api.exmo.com/v1/ticker/', timeout = 5)
+            api_exc = api_exc_get.text
         except:
+            print('Проблемы с получением API exchange!')
+
+        try:
+            btc_usd = round(float(api_exc.split('"BTC_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+        except:       
             print('проблемы с получением курса btc_usd')
-        time.sleep(5)     
         try:
-            eth_usd_su = requests.get('https://cex.io/api/ticker/ETH/USD', timeout = 5)
-            eth_usd = eth_usd_su.text.split('"last":"',1)[1].split('","volume"',1)[0][0:]
-        except:
-            print('проблемы с получением курса eth_usd')            
-        time.sleep(5)    
+            eth_usd = round(float(api_exc.split('"ETH_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+        except:       
+            print('проблемы с получением курса eth_usd')
         try:
-            usd_rub_su = requests.get('https://free.currencyconverterapi.com/api/v6/convert?q=USD_RUB&compact=y', timeout = 5)
-            usd_rub = usd_rub_su.text.split('val":',1)[1].split('}',1)[0][0:]
-        except:
-            print('проблемы с получением курса usd_rub')
-        time.sleep(5)    
+            usd_rub = round(float(api_exc.split('"USDT_RUB":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+        except:       
+            print('проблемы с получением курса usd_rub')    
         try:
-            eur_rub_su = requests.get('https://free.currencyconverterapi.com/api/v6/convert?q=EUR_RUB&compact=y', timeout = 5)
-            eur_rub = eur_rub_su.text.split('val":',1)[1].split('}',1)[0][0:]
-        except:
-            print('проблемы с получением курса eur_rub')
+            btc_eur = round(float(api_exc.split('"BTC_EUR":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+        except:       
+            print('проблемы с получением курса btc_eur')
 
-        timer_exc = time.time()
-
-        # make numbers to as 0000.00
-        float(btc_usd) 
-        float(eth_usd)
-        float(usd_rub)
-        float(eur_rub) 
-        float(btc_rub) 
-
-        btc_usd = round(float(btc_usd), 2)
-        eth_usd = round(float(eth_usd), 2)
-        usd_rub = round(float(usd_rub), 2)
-        eur_rub = round(float(eur_rub), 2)
-        btc_rub = round(float(btc_usd*usd_rub), 2)
+        eur_rub = round(float(usd_rub*(btc_usd / btc_eur)),2)
+        btc_rub = round(float(btc_usd * usd_rub),2)
 
         # make trends symbols from last request
         if btc_usd > btc_usd_old:
@@ -429,20 +418,9 @@ while True:
         send_res_exc = '\x033Курсы: \x02BTC/USD:\x02 '+btc_usd_str+' '+btc_usd_tend+' \x02ETH/USD:\x02 '+eth_usd_str+' '+eth_usd_tend+' \x02USD/RUB:\x02 \
 '+usd_rub_str+' '+usd_rub_tend+' \x02EUR/RUB:\x02 '+eur_rub_str+' '+eur_rub_tend+' \x02BTC/RUB:\x02 \
 '+btc_rub_str+' '+btc_rub_tend+'\r\n'
-        
-    # give exchanges to user on his query 
-    if 'PRIVMSG '+channel+' :!курс' in data or 'PRIVMSG '+botName+' :!курс' in data:        
-        if 'PRIVMSG '+channel+' :!курс' in data:
-            where_mes_exc = channel
-        if 'PRIVMSG '+botName+' :!курс' in data:
-            where_mes_exc = name
-            
-        exc_t_restInSec = (exc_timer-(time_exc - timer_exc)) #rest time in seconds for new parser frop API    
-            
-        send('PRIVMSG %s :%s\r\n'%(where_mes_exc,send_res_exc)) #send to user a message with exchange from memory variable
-        send('PRIVMSG %s :курсы обновляются раз в %d мин %d сек, до очередного обновления осталось: %d мин %d \
-сек.\r\n'%(where_mes_exc, exc_timer//60, exc_timer%60, exc_t_restInSec//60, exc_t_restInSec%60 ))
 
+        send('PRIVMSG %s :%s\r\n'%(where_mes_exc,send_res_exc))
+    
     #------------printing---------------      
 
     print(data)
