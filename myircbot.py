@@ -72,7 +72,7 @@ print (irc.recv(2048).decode("UTF-8"))
 send('NICK '+botName+'\r\n')
 send('USER '+botName+' '+botName+' '+botName+' :Python IRC\r\n')
 send('JOIN '+channel+' \r\n')
-send('NickServ IDENTIFY xxxxxx\r\n') # Change xxxxxx for nick code.
+send('NickServ IDENTIFY xxxxxx\r\n')
 send('MODE '+botName+' +x')
 
 #-------Global_variables--------------------
@@ -122,7 +122,8 @@ dict_voted = {}
 dict_whois = {} 
 list_vote_ip = []
 
-list_floodfree = ['Батый', 'Батый_', botName, masterName] #list who free from anti-flood function
+# List who free from anti-flood function.
+list_floodfree = ['Батый', 'Батый_', botName, masterName]
 
 #-------Major_while-------------------------
   
