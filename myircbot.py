@@ -61,8 +61,8 @@ max_timer = 300
 network = 'irc.tambov.ru'
 port = 7770
 irc = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-channel = '#botest'
-botName = 'Govno_tik'
+channel = '#magi'
+botName = 'Govnotik'
 masterName = 'Кай'
 
 #-------Conect to IRC-server----------------
