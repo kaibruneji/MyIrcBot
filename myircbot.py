@@ -150,7 +150,7 @@ while True:
     if 'PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' in data:
         send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
         send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например (пишем \
-без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писат ьвремя, то время установится на 60 сек\r\n' %(name))
+без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время установится на 60 сек\r\n' %(name))
         send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))        
@@ -242,7 +242,7 @@ while True:
 
         except:
             print('get Value Error in whois servis!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес из цифер, разделенных точками! Или существующий ник!\r\n')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес из цифр, разделенных точками! Или существующий ник!\r\n')
                      
     #---------Info from link in channel-------------
     
@@ -277,7 +277,7 @@ while True:
                     message_voting = message.split('!опрос',1)[1].strip()
 
             if min_timer>time_vote or max_timer<time_vote:
-                send('PRIVMSG %s :Ошибка ввода таймера голования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
+                send('PRIVMSG %s :Ошибка ввода таймера голосования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
                 continue
             
             t2 = time.time()
@@ -288,8 +288,8 @@ while True:
             list_vote_ip = []
             # Do null voting massiv.  
             dict_voted = {}
-            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти %d секунд. Что бы ответить "да" пишите: \"!да\" \
-", что бы ответить "нет" пишите: \"!нет\". Писать можно как открыто в канал, так и в приват боту, что бы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
+            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти %d секунд. Чтобы ответить "да", пишите: \"!да\" \
+", чтобы ответить "нет", пишите: \"!нет\". Писать можно как открыто в канал, так и в приват боту, чтобы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
             list_vote_ip = []
                 
     # If find '!да' count +1.  
@@ -358,19 +358,19 @@ while True:
         try:
             btc_usd = round(float(api_exc.split('"BTC_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
         except:
-            print('проблемы с получением курса btc_usd')
+            print('Проблемы с получением курса btc_usd')
         try:
             eth_usd = round(float(api_exc.split('"ETH_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
         except:
-            print('проблемы с получением курса eth_usd')
+            print('Проблемы с получением курса eth_usd')
         try:
             usd_rub = round(float(api_exc.split('"USDT_RUB":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
         except:
-            print('проблемы с получением курса usd_rub')    
+            print('Проблемы с получением курса usd_rub')    
         try:
             btc_eur = round(float(api_exc.split('"BTC_EUR":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
         except:
-            print('проблемы с получением курса btc_eur')
+            print('Проблемы с получением курса btc_eur')
 
         eur_rub = round(float(usd_rub*(btc_usd / btc_eur)),2)
         btc_rub = round(float(btc_usd * usd_rub),2)
