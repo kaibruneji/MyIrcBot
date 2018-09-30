@@ -4,6 +4,7 @@ import socket
 import sys
 import time
 import requests
+import settings
 
 from urllib.parse import unquote
 
@@ -58,12 +59,12 @@ max_timer = 300
 
 #-------Connect server----------------------
 
-network = 'irc.tambov.ru'
-port = 7770
+network = settings.settings('network')
+port = settings.settings('port')
 irc = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-channel = '#magi'
-botName = 'Govnotik'
-masterName = 'Кай'
+channel = settings.settings('channel')
+botName = settings.settings('botName')
+masterName = settings.settings('masterName')
 
 #-------Conect to IRC-server----------------
 
@@ -72,7 +73,7 @@ print (irc.recv(2048).decode("UTF-8"))
 send('NICK '+botName+'\r\n')
 send('USER '+botName+' '+botName+' '+botName+' :Python IRC\r\n')
 send('JOIN '+channel+' \r\n')
-send('NickServ IDENTIFY xxxxxx\r\n')
+send('NickServ IDENTIFY '+settings.settings('password')+'\r\n')
 send('MODE '+botName+' +x')
 
 #-------Global_variables--------------------
@@ -123,7 +124,7 @@ dict_whois = {}
 list_vote_ip = []
 
 # List who free from anti-flood function.
-list_floodfree = ['Батый', 'Батый_', botName, masterName]
+list_floodfree = settings.settings('list_floodfree')
 
 #-------Major_while-------------------------
   
