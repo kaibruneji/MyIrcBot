@@ -39,15 +39,21 @@ def link_title(n):
         unquoted_link = unquote(link)
         get_title = requests.get(link, timeout = 10)
         txt_title = get_title.text
-        if '</TITLE>' in txt_title or '</title>' in txt_title or '</Title>' in txt_title:
+        if '</TITLE>' in txt_title or '</title>' in txt_title\
+                      or '</Title>' in txt_title:
             if '</TITLE>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</TITLE>',1)[0].split('>')[-1]
+                title = '\x02Title\x02 of '+unquoted_link+': '+\
+                txt_title.split('</TITLE>',1)[0].split('>')[-1]
             elif '</title>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</title>',1)[0].split('>')[-1]
+                title = '\x02Title\x02 of '+unquoted_link+': '+\
+                txt_title.split('</title>',1)[0].split('>')[-1]
             elif '</Title>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+txt_title.split('</Title>',1)[0].split('>')[-1]
+                title = '\x02Title\x02 of '+unquoted_link+': '+\
+                txt_title.split('</Title>',1)[0].split('>')[-1]
 
-            return title.replace('\r','').replace('\n','').replace('www.','').replace('http://','').replace('https://','').strip()
+            return title.replace('\r','').replace('\n','').replace\
+                   ('www.','').replace('http://','').replace\
+                   ('https://','').strip()
         else:
             return 'Title is no'
           
@@ -82,7 +88,6 @@ name = ''
 message = ''
 message_voting = ''
 voting_results = ''
-time_vote_rest = 0
 
 count_voting = 0
 count_vote_plus = 0
@@ -150,10 +155,13 @@ while True:
 
     if 'PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' in data:
         send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
-        send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например (пишем \
-без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время установится на 60 сек\r\n' %(name))
-        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать можно и в приват боту\r\n' %(name))
-        send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
+        send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
+(пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
+установится на 60 сек\r\n' %(name))
+        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
+можно и в приват боту\r\n' %(name))
+        send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
+(без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))        
 
     #-----------Anti_flood-------------
@@ -165,7 +173,8 @@ while True:
         dict_count = {}
             
     # Insert nick in dict: dic_count.  
-    if data.find('PRIVMSG') != -1 and name not in dict_count and name not in list_floodfree:
+    if data.find('PRIVMSG') != -1 and name not in dict_count and\
+       name not in list_floodfree:
         dict_count[name] = int(1)
         if 'PRIVMSG '+channel in data:
             where_message = channel
@@ -173,7 +182,8 @@ while True:
             where_message = botName
     
     # If new message as last message: count +1.  
-    if data.find('PRIVMSG') != -1 and message == dict_users.get(name) and name not in list_floodfree:
+    if data.find('PRIVMSG') != -1 and message == dict_users.get(name)\
+       and name not in list_floodfree:
         dict_count[name] += int(1)
     
     # Add key and value in massiv.  
@@ -199,13 +209,15 @@ while True:
         sys.exit()
 
     # Message per bot.  
-    if "PRIVMSG %s :!напиши "%(channel) in data or "PRIVMSG %s :!напиши "%(botName) in data and name == masterName:
+    if "PRIVMSG %s :!напиши "%(channel) in data or\
+       "PRIVMSG %s :!напиши "%(botName) in data and name == masterName:
         mes_per_bot = message.split('!напиши ',1)[1]
         send(mes_per_bot)
         
     #---------Whois servis--------------------------
 
-    if 'PRIVMSG '+channel+' :!где айпи' in data or 'PRIVMSG '+botName+' :!где айпи' in data:
+    if 'PRIVMSG '+channel+' :!где айпи' in data\
+       or 'PRIVMSG '+botName+' :!где айпи' in data:
 
         if 'PRIVMSG '+channel+' :!где айпи' in data:
             where_message_whois = channel
@@ -220,9 +232,11 @@ while True:
             for i in whois_list_split:
                 list_whois.append(int(i))
             try:
-                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+whois_ip, timeout = 5)
+                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+\
+                                            whois_ip, timeout = 5)
             except:
-                send('PRIVMSG %s :Ошибка! Не удалось полчить IP через API!\r\n'%(where_message_whois))
+                send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
+                     через API!\r\n'%(where_message_whois))
                 continue
 
             if whois_ip in dict_whois:
@@ -234,8 +248,9 @@ while True:
             city_whois=whois_ip_get.text.split('<city_rus>',1)[1].split('</city_rus>',1)[0]
             time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
                      
-            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+country_whois+' \x02Город:\x02 '+city_whois+' \x02Часовой пояс \
-:\x02 '+time_zone_whois+'\r\n'
+            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+            country_whois+' \x02Город:\x02 '+city_whois+\
+            ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
             send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
 
             # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
@@ -243,11 +258,13 @@ while True:
 
         except:
             print('get Value Error in whois servis!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес из цифр, разделенных точками! Или существующий ник!\r\n')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес\
+из цифр, разделенных точками! Или существующий ник!\r\n')
                      
     #---------Info from link in channel-------------
     
-    if 'PRIVMSG %s :'%(channel) in data:
+    if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
+       not in data and 'tiff' not in data and 'gif' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
             try:
                 send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
@@ -278,7 +295,8 @@ while True:
                     message_voting = message.split('!опрос',1)[1].strip()
 
             if min_timer>time_vote or max_timer<time_vote:
-                send('PRIVMSG %s :Ошибка ввода таймера голосования. Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
+                send('PRIVMSG %s :Ошибка ввода таймера голосования.\
+Введите от %s до %s сек!\r\n'%(channel,min_timer,max_timer))
                 continue
             
             t2 = time.time()
@@ -289,8 +307,10 @@ while True:
             list_vote_ip = []
             # Do null voting massiv.  
             dict_voted = {}
-            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти %d секунд. Чтобы ответить "да", пишите: \"!да\" \
-", чтобы ответить "нет", пишите: \"!нет\". Писать можно как открыто в канал, так и в приват боту, чтобы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
+            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти\
+%d секунд. Чтобы ответить "да", пишите: \"!да\" \
+", чтобы ответить "нет", пишите: \"!нет\". Писать можно как открыто в канал,\
+так и в приват боту, чтобы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
             list_vote_ip = []
                 
     # If find '!да' count +1.  
@@ -327,12 +347,14 @@ while True:
         time_vote_rest_min = (time_vote-(t3-t2))//60
         time_vote_rest_sec = (time_vote-(t3-t2))%60
         if (time_vote-(t3-t2)) > 0:
-            send('PRIVMSG %s : Предыдущий опрос: \"%s\" ещё не окончен, до окончания опроса осталось: %d мин %d сек\r\n \
+            send('PRIVMSG %s : Предыдущий опрос: \"%s\" ещё не окончен, до окончания\
+опроса осталось: %d мин %d сек\r\n \
 ' % (channel,message_voting,time_vote_rest_min,time_vote_rest_sec))
 
     # Make variable message rusults voting.  
     vote_all = count_vote_minus + count_vote_plus
-    voting_results = 'PRIVMSG %s : результаты опроса: \"%s\", "Да" ответило: %d человек(а), "Нет" ответило: %d человек(а), Всего ответило: %d человек(а) \
+    voting_results = 'PRIVMSG %s : результаты опроса: \"%s\", "Да" ответило: %d\
+человек(а), "Нет" ответило: %d человек(а), Всего ответило: %d человек(а) \
 \r\n' % (channel, message_voting, count_vote_plus, count_vote_minus, vote_all)
 
     # When voting End: send to channel ruselts and time count to zero.  
@@ -425,9 +447,11 @@ while True:
         eur_rub_str = str(eur_rub)
         btc_rub_str = str(btc_rub)            
 
-        send_res_exc = '\x033Курсы: \x02BTC/USD:\x02 '+btc_usd_str+' '+btc_usd_tend+' \x02ETH/USD:\x02 '+eth_usd_str+' '+eth_usd_tend+' \x02USD/RUB:\x02 \
-'+usd_rub_str+' '+usd_rub_tend+' \x02EUR/RUB:\x02 '+eur_rub_str+' '+eur_rub_tend+' \x02BTC/RUB:\x02 \
-'+btc_rub_str+' '+btc_rub_tend+'\r\n'
+        send_res_exc = '\x033Курсы: \x02BTC/USD:\x02 '+btc_usd_str+\
+        ' '+btc_usd_tend+' \x02ETH/USD:\x02 '+eth_usd_str+' '+eth_usd_tend+\
+        ' \x02USD/RUB:\x02 '+usd_rub_str+' '+usd_rub_tend+' \x02EUR/RUB:\x02 '+\
+        eur_rub_str+' '+eur_rub_tend+' \x02BTC/RUB:\x02 '+btc_rub_str+\
+        ' '+btc_rub_tend+'\r\n'
 
         send('PRIVMSG %s :%s\r\n'%(where_mes_exc,send_res_exc))
     
