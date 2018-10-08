@@ -220,51 +220,49 @@ while True:
        or 'PRIVMSG '+botName+' :!где айпи' in data:
 
         if 'PRIVMSG '+channel+' :!где айпи' in data:
-            where_message_whois = channel
-            
+            where_message_whois = channel            
         elif 'PRIVMSG '+botName+' :!где айпи' in data:
             where_message_whois = name
                       
-        try:
-            whois_ip = data.split('!где айпи',1)[1].split('\r',1)[0].strip()
-            whois_list_split=whois_ip.split('.')
-            list_whois = []
-            for i in whois_list_split:
-                list_whois.append(int(i))
-            try:
-                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+\
-                                            whois_ip, timeout = 5)
-            except:
-                send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
-                     через API!\r\n'%(where_message_whois))
-                continue
+    #try:
+        whois_ip = data.split('!где айпи',1)[1].strip()
+        whois_list_split=whois_ip.split('.')
+        list_whois = []
+        for i in whois_list_split:
+            list_whois.append(int(i))
+    #try:
+        whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+whois_ip, timeout = 5, verify=False)
+    #except:
+        #send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
+         #    через API!\r\n'%(where_message_whois))
+        #continue
 
-            if whois_ip in dict_whois:
-                send('PRIVMSG '+where_message_whois+' :IP взято из памяти:\r\n')
-                send('PRIVMSG %s :%s\r\n'%(where_message_whois,dict_whois[whois_ip]))
-                continue
-              
-            country_whois=whois_ip_get.text.split('<country_rus>',1)[1].split('</country_rus>',1)[0]
-            city_whois=whois_ip_get.text.split('<city_rus>',1)[1].split('</city_rus>',1)[0]
-            time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
-                     
-            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-            country_whois+' \x02Город:\x02 '+city_whois+\
-            ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
-            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
+        if whois_ip in dict_whois:
+            send('PRIVMSG '+where_message_whois+' :IP взято из памяти:\r\n')
+            send('PRIVMSG %s :%s\r\n'%(where_message_whois,dict_whois[whois_ip]))
+            continue
+          
+        country_whois=whois_ip_get.text.split('<country_rus>',1)[1].split('</country_rus>',1)[0]
+        city_whois=whois_ip_get.text.split('<city_rus>',1)[1].split('</city_rus>',1)[0]
+        time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
+                 
+        whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+                            country_whois+' \x02Город:\x02 '+city_whois+\
+                            ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
+        send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
 
-            # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
-            dict_whois[whois_ip] = whois_final_reply
+        # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
+        dict_whois[whois_ip] = whois_final_reply
 
-        except:
-            print('get Value Error in whois servis!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес\
+    #except:
+        print('get Value Error in whois servis!')
+        send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками! Или существующий ник!\r\n')
                      
     #---------Info from link in channel-------------
     
     if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-       not in data and 'tiff' not in data and 'gif' not in data:
+       not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
             try:
                 send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
@@ -377,7 +375,6 @@ while True:
             api_exc = api_exc_get.text
         except:
             print('Проблемы с получением API exchange!')
-
         try:
             btc_usd = round(float(api_exc.split('"BTC_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
         except:
