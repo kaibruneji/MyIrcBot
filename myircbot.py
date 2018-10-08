@@ -224,39 +224,39 @@ while True:
         elif 'PRIVMSG '+botName+' :!где айпи' in data:
             where_message_whois = name
                       
-    #try:
-        whois_ip = data.split('!где айпи',1)[1].strip()
-        whois_list_split=whois_ip.split('.')
-        list_whois = []
-        for i in whois_list_split:
-            list_whois.append(int(i))
-    #try:
-        whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+whois_ip, timeout = 5, verify=False)
-    #except:
-        #send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
-         #    через API!\r\n'%(where_message_whois))
-        #continue
+        try:
+            whois_ip = data.split('!где айпи',1)[1].strip()
+            whois_list_split=whois_ip.split('.')
+            list_whois = []
+            for i in whois_list_split:
+                list_whois.append(int(i))
+            try:
+                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+whois_ip, timeout = 5, verify=False)
+            except:
+                send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
+                     через API!\r\n'%(where_message_whois))
+                continue
 
-        if whois_ip in dict_whois:
-            send('PRIVMSG '+where_message_whois+' :IP взято из памяти:\r\n')
-            send('PRIVMSG %s :%s\r\n'%(where_message_whois,dict_whois[whois_ip]))
-            continue
-          
-        country_whois=whois_ip_get.text.split('<country_rus>',1)[1].split('</country_rus>',1)[0]
-        city_whois=whois_ip_get.text.split('<city_rus>',1)[1].split('</city_rus>',1)[0]
-        time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
-                 
-        whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-                            country_whois+' \x02Город:\x02 '+city_whois+\
-                            ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
-        send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
+            if whois_ip in dict_whois:
+                send('PRIVMSG '+where_message_whois+' :IP взято из памяти:\r\n')
+                send('PRIVMSG %s :%s\r\n'%(where_message_whois,dict_whois[whois_ip]))
+                continue
+              
+            country_whois=whois_ip_get.text.split('<country_rus>',1)[1].split('</country_rus>',1)[0]
+            city_whois=whois_ip_get.text.split('<city_rus>',1)[1].split('</city_rus>',1)[0]
+            time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
+                     
+            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+                                country_whois+' \x02Город:\x02 '+city_whois+\
+                                ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
+            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
 
-        # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
-        dict_whois[whois_ip] = whois_final_reply
+            # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
+            dict_whois[whois_ip] = whois_final_reply
 
-    #except:
-        print('get Value Error in whois servis!')
-        send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+        except:
+            print('get Value Error in whois servis!')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками! Или существующий ник!\r\n')
                      
     #---------Info from link in channel-------------
