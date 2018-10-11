@@ -25,7 +25,7 @@ def link_title(n):
 
     max_t_link = 5
     t_link = time.time()
-    for i in requests.get(link, stream=True):
+    for i in requests.get(link, stream=True, verify=False):
         t2_link = time.time()
         if t2_link > t_link + max_t_link:
             requests.get(link, stream=True).close()
@@ -220,18 +220,20 @@ while True:
        or 'PRIVMSG '+botName+' :!где айпи' in data:
 
         if 'PRIVMSG '+channel+' :!где айпи' in data:
-            where_message_whois = channel            
+            where_message_whois = channel
+            
         elif 'PRIVMSG '+botName+' :!где айпи' in data:
             where_message_whois = name
                       
         try:
-            whois_ip = data.split('!где айпи',1)[1].strip()
+            whois_ip = data.split('!где айпи',1)[1].split('\r',1)[0].strip()
             whois_list_split=whois_ip.split('.')
             list_whois = []
             for i in whois_list_split:
                 list_whois.append(int(i))
             try:
-                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+whois_ip, timeout = 5, verify=False)
+                whois_ip_get = requests.get('https://api.2ip.ua/geo.xml?ip='+\
+                                            whois_ip, verify=False, timeout = 5)
             except:
                 send('PRIVMSG %s :Ошибка! Не удалось полчить IP\
                      через API!\r\n'%(where_message_whois))
@@ -247,8 +249,8 @@ while True:
             time_zone_whois=whois_ip_get.text.split('<time_zone>',1)[1].split('</time_zone>',1)[0]
                      
             whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-                                country_whois+' \x02Город:\x02 '+city_whois+\
-                                ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
+            country_whois+' \x02Город:\x02 '+city_whois+\
+            ' \x02Часовой пояс :\x02 '+time_zone_whois+'\r\n'
             send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)
 
             # Make a IP as kay and final relpy as value in a dict for future use for reply again.  
@@ -256,7 +258,7 @@ while True:
 
         except:
             print('get Value Error in whois servis!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес\
 из цифр, разделенных точками! Или существующий ник!\r\n')
                      
     #---------Info from link in channel-------------
@@ -266,8 +268,9 @@ while True:
         if 'http://' in data or 'https://' in data or 'www.' in data:
             try:
                 send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
-            except:
-                print('Ошибка получения Title')
+            except requests.exceptions.ConnectionError:
+                print('Ошибка получения Title (requests.exceptions.ConnectionError)')
+                send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
             
     #---------Voting--------------------------------
                 
