@@ -130,6 +130,7 @@ list_vote_ip = []
 
 # List who free from anti-flood function.
 list_floodfree = settings.settings('list_floodfree')
+list_bot_not_work = settings.settings('list_bot_not_work')
 
 #-------Major_while-------------------------
   
@@ -278,7 +279,7 @@ while True:
     if '!стоп опрос' in data and 'PRIVMSG' in data and name == masterName:
         t2 = 0
         print('счетчик опроса сброшен хозяином!')
-    if 'PRIVMSG '+channel+' :!опрос ' in data:
+    if 'PRIVMSG '+channel+' :!опрос ' in data and ip_user not in list_bot_not_work:
         if t2 == 0 or t > t2+time_vote:
             if ' сек ' not in data:
                 time_vote = 60
@@ -308,7 +309,7 @@ while True:
             list_vote_ip = []
             # Do null voting massiv.  
             dict_voted = {}
-            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти\
+            send('PRIVMSG %s :Начинается опрос: \"%s\". Опрос будет идти \
 %d секунд. Чтобы ответить "да", пишите: \"!да\" \
 ", чтобы ответить "нет", пишите: \"!нет\". Писать можно как открыто в канал,\
 так и в приват боту, чтобы голосовать анонимно \r\n' % (channel,message_voting,time_vote))
@@ -348,7 +349,7 @@ while True:
         time_vote_rest_min = (time_vote-(t3-t2))//60
         time_vote_rest_sec = (time_vote-(t3-t2))%60
         if (time_vote-(t3-t2)) > 0:
-            send('PRIVMSG %s : Предыдущий опрос: \"%s\" ещё не окончен, до окончания\
+            send('PRIVMSG %s : Предыдущий опрос: \"%s\" ещё не окончен, до окончания \
 опроса осталось: %d мин %d сек\r\n \
 ' % (channel,message_voting,time_vote_rest_min,time_vote_rest_sec))
 
