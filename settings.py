@@ -5,7 +5,7 @@ botName = 'Govnotik'
 masterName = 'Кай'
 password = 'xxxxxx'
 list_floodfree = ['Батый', 'Батый_', botName, masterName]
-list_bot_not_work = ['@iphone.telenet.ru', 'ec2-54-211-164-67.compute-1.amazonaws.com']
+list_bot_not_work = ['iphone.telenet.ru', 'ec2-54-211-164-67.compute-1.amazonaws.com']
 
 def settings(x):
     if x == 'network':

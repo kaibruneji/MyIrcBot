@@ -5,6 +5,7 @@ import sys
 import time
 import requests
 import settings
+import translate_krzb
 
 from urllib.parse import unquote
 
@@ -17,13 +18,17 @@ def send(mes):
 # Function of parcing of get TITLE from link.  
 def link_title(n):
     if 'http://' in n or 'https://' in n:
-        link_r = n.split('//',1)[1].split(' ',1)[0].rstrip()
-
+        try:
+            link_r = n.split('//',1)[1].split(' ',1)[0].rstrip()
+        except:
+            print('Link wrong!')      
     elif 'www.' in n:
-        link_r = n.split('www.',1)[1].split(' ',1)[0].rstrip()
-    link = 'http://'+link_r
-
-    max_t_link = 5
+        try:
+            link_r = n.split('www.',1)[1].split(' ',1)[0].rstrip()    
+        except:
+            print('Link wrong!')
+    link = 'http://'+link_r        
+    max_t_link = 30
     t_link = time.time()
     for i in requests.get(link, stream=True, verify=False):
         t2_link = time.time()
@@ -152,6 +157,12 @@ while True:
     except:
         print('no ip_user on 73 line')
 
+    #-----------Translate_krzb---------
+    if '!п ' in message:
+       tr_txt = message.split('!п ',1)[1].strip()
+       res_txt = translate_krzb.tr(tr_txt)
+       send('PRIVMSG '+channel+' :\x02перевод с кракозябьечьего:\x02 '+res_txt+'\r\n')
+
     #-----------Bot_help---------------
 
     if 'PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' in data:
@@ -163,7 +174,8 @@ while True:
 можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
-188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))        
+188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
+        send('NOTICE %s : ***Функция перевода с английских букв на русские: \"!п tekst perevoda\", пример: \"!п ghbdtn\r\n' %(name))
 
     #-----------Anti_flood-------------
 
@@ -265,14 +277,15 @@ while True:
     #---------Info from link in channel-------------
     
     if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-       not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data:
+       not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
             try:
                 send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
             except requests.exceptions.ConnectionError:
                 print('Ошибка получения Title (requests.exceptions.ConnectionError)')
                 send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
-            
+            except:
+                print('Error link!')  
     #---------Voting--------------------------------
                 
     t = time.time()
@@ -355,7 +368,7 @@ while True:
 
     # Make variable message rusults voting.  
     vote_all = count_vote_minus + count_vote_plus
-    voting_results = 'PRIVMSG %s : результаты опроса: \"%s\", "Да" ответило: %d\
+    voting_results = 'PRIVMSG %s : результаты опроса: \"%s\", "Да" ответило: %d \
 человек(а), "Нет" ответило: %d человек(а), Всего ответило: %d человек(а) \
 \r\n' % (channel, message_voting, count_vote_plus, count_vote_minus, vote_all)
 
@@ -380,19 +393,19 @@ while True:
         except:
             print('Проблемы с получением API exchange!')
         try:
-            btc_usd = round(float(api_exc.split('"BTC_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+            btc_usd = round(float(api_exc.split('"BTC_USDT":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
         except:
             print('Проблемы с получением курса btc_usd')
         try:
-            eth_usd = round(float(api_exc.split('"ETH_USDT":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+            eth_usd = round(float(api_exc.split('"ETH_USDT":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
         except:
             print('Проблемы с получением курса eth_usd')
         try:
-            usd_rub = round(float(api_exc.split('"USDT_RUB":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+            usd_rub = round(float(api_exc.split('"USDT_RUB":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
         except:
             print('Проблемы с получением курса usd_rub')    
         try:
-            btc_eur = round(float(api_exc.split('"BTC_EUR":',1)[1].split('"avg":"',1)[1].split('","vol"',1)[0][0:]),2)
+            btc_eur = round(float(api_exc.split('"BTC_EUR":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
         except:
             print('Проблемы с получением курса btc_eur')
 
