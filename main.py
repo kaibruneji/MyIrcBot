@@ -157,11 +157,18 @@ while True:
     except:
         print('no ip_user on 73 line')
 
-    #-----------Translate_krzb---------
-    if '!п ' in message:
-       tr_txt = message.split('!п ',1)[1].strip()
-       res_txt = translate_krzb.tr(tr_txt)
-       send('PRIVMSG '+channel+' :\x02перевод с кракозябьечьего:\x02 '+res_txt+'\r\n')
+    #-----------Translate_krzb---------    
+
+    if 'PRIVMSG '+channel+' :!п ' in data \
+       or 'PRIVMSG '+botName+' :!п ' in data:
+        if 'PRIVMSG '+channel+' :!п ' in data:
+            where_message = channel            
+        elif 'PRIVMSG '+botName+' :!п ' in data:
+            where_message = name
+            
+        tr_txt = message.split('!п ',1)[1].strip()
+        res_txt = translate_krzb.tr(tr_txt)
+        send('PRIVMSG '+where_message+' :\x02перевод с кракозябьечьего:\x02 '+res_txt+'\r\n')
 
     #-----------Bot_help---------------
 
