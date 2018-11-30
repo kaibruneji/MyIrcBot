@@ -250,20 +250,23 @@ while True:
             get_whois = whois.whois(whois_ip)
             country_whois = get_whois['country']
             city_whois = get_whois['city']
+            address_whois = get_whois['address']    
             print(get_whois)
 
             if country_whois == None:
                 country_whois = 'None'
             if city_whois == None:
                 city_whois = 'None'
+            if address_whois == None:
+                address_whois = 'None'    
                        
             whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-            country_whois+' \x02Город:\x02 '+city_whois+'\r\n'
+            country_whois+' \x02Адресс:\x02 '+address_whois+'\r\n'
             send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)            
 
         except:
             print('get Value Error in whois servis!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес\
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
                      
     #---------Info from link in channel-------------

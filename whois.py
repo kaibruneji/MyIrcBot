@@ -5,5 +5,6 @@ def whois(ip):
     data = data.lookup_whois()
     country = data['nets'][0]['country']
     city = data['nets'][0]['city']
-    return {'city': city, 'country': country}
+    address = data['nets'][0]['address']
+    return {'city': city, 'country': country, 'address': address}
     
