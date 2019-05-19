@@ -14,7 +14,7 @@ with open('code.json', 'r') as code_json:
 obj = json.loads(code)
 
 password = str(obj['password'])
-channel = str(obj['passord'])
+channel = str(obj['channel'])
 
 def settings(x):
     if x == 'network':
