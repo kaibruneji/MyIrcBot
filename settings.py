@@ -1,11 +1,20 @@
+import json
+
 network = 'irc.tambov.ru'
 port = 7770
-channel = '#magi'
 botName = 'Govnotik'
 masterName = 'Кай'
-password = 'xxxxxx'
 list_floodfree = ['Батый', 'Батый_', botName, masterName]
 list_bot_not_work = ['iphone.telenet.ru', 'ec2-54-211-164-67.compute-1.amazonaws.com']
+
+#----input_password-----
+with open('code.json', 'r') as code_json:
+    code=code_json.read()   
+
+obj = json.loads(code)
+
+password = str(obj['password'])
+channel = str(obj['passord'])
 
 def settings(x):
     if x == 'network':
