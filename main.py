@@ -126,19 +126,23 @@ time_exc = 0
 where_mes_exc = ''
 t2 = 0
 
+send_NAMES_on_off = True
+JOIN_time = 0
+
 #-------Massives----------------------------
 
 dict_users = {}
 dict_count = {}
 dict_voted = {}
 list_vote_ip = []
+list_users = []
 
 # List who free from anti-flood function.
 list_floodfree = settings.settings('list_floodfree')
 list_bot_not_work = settings.settings('list_bot_not_work')
 
 #-------Major_while-------------------------
-  
+
 while True:
     try:
         data = irc.recv(2048).decode("UTF-8")
@@ -155,20 +159,22 @@ while True:
     try:
         ip_user=data.split('@',1)[1].split(' ',1)[0]
     except:
-        print('no ip_user on 73 line')
-
+        print('no ip_user on 73 line')        
+    
     #-----------Translate_krzb---------    
 
-    if 'PRIVMSG '+channel+' :!п ' in data \
-       or 'PRIVMSG '+botName+' :!п ' in data:
-        if 'PRIVMSG '+channel+' :!п ' in data:
-            where_message = channel            
-        elif 'PRIVMSG '+botName+' :!п ' in data:
-            where_message = name
-            
-        tr_txt = message.split('!п ',1)[1].strip()
-        res_txt = translate_krzb.tr(tr_txt)
-        send('PRIVMSG '+where_message+' :\x02перевод с кракозябьечьего:\x02 '+res_txt+'\r\n')
+    if ' :!k' in data:
+        if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
+            if 'PRIVMSG '+channel in data:
+                where_message = channel            
+            elif 'PRIVMSG '+botName in data:
+                where_message = name            
+            if '!k ' in data:
+                tr_txt = message.split('!k ',1)[1].strip()
+            else:
+                tr_txt = prev_message
+            res_txt = translate_krzb.tr(tr_txt)
+            send('PRIVMSG '+where_message+' :\x02перевод:\x02 '+res_txt+'\r\n')
 
     #-----------Bot_help---------------
 
@@ -182,7 +188,9 @@ while True:
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
-        send('NOTICE %s : ***Функция перевода с английских букв на русские: \"!п tekst perevoda\", пример: \"!п ghbdtn\r\n' %(name))
+        send('NOTICE %s : ***Функция перевода с английских букв на русские \
+: \"!k tekst perevoda\", пример: \"!k ghbdtn , или пишите просто \"!k\" \
+чтобы перевести предыдущее сообщение\r\n' %(name))
 
     #-----------Anti_flood-------------
 
@@ -270,7 +278,7 @@ while True:
 из цифр, разделенных точками!\r\n')
                      
     #---------Info from link in channel-------------
-    
+    '''
     if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
@@ -280,7 +288,8 @@ while True:
                 print('Ошибка получения Title (requests.exceptions.ConnectionError)')
                 send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
             except:
-                print('Error link!')  
+                print('Error link!')
+                '''
     #---------Voting--------------------------------
                 
     t = time.time()
@@ -463,6 +472,8 @@ while True:
         ' '+btc_rub_tend+'\r\n'
 
         send('PRIVMSG %s :%s\r\n'%(where_mes_exc,send_res_exc))
+
+    prev_message = message
     
     #------------Printing---------------
 
