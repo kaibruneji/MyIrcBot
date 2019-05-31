@@ -183,7 +183,7 @@ while True:
         send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
 (пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
 установится на 60 сек\r\n' %(name))
-        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
+        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс эксмо\". Писать\
 можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
@@ -385,8 +385,8 @@ while True:
     #---------Exchange-------------
 
     # Get exchange from internet API at regular time.     
-    if 'PRIVMSG '+channel+' :!курс' in data or 'PRIVMSG '+botName+' :!курс' in data:
-        if 'PRIVMSG '+channel+' :!курс' in data:
+    if 'PRIVMSG '+channel in data and '!курс эксмо' in data or 'PRIVMSG '+botName+' :!курс' in data:
+        if 'PRIVMSG '+channel in data and '!курс эксмо' in data:
             where_mes_exc = channel
         if 'PRIVMSG '+botName+' :!курс' in data:
             where_mes_exc = name
