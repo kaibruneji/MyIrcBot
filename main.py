@@ -7,6 +7,7 @@ import requests
 import settings
 import translate_krzb
 import whois
+import ast
 
 from urllib.parse import unquote
 
@@ -146,7 +147,8 @@ list_bot_not_work = settings.settings('list_bot_not_work')
 while True:
     try:
         data = irc.recv(2048).decode("UTF-8")
-    except:
+    except UnicodeDecodeError:
+        print('UnicodeDecodeError!!!')
         continue
     # Ping-pong.
     if data.find('PING') != -1:
@@ -183,7 +185,7 @@ while True:
         send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
 (пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
 установится на 60 сек\r\n' %(name))
-        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс эксмо\". Писать\
+        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
 можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
@@ -244,18 +246,19 @@ while True:
         
     #---------Whois servis--------------------------
 
-    if 'PRIVMSG '+channel+' :!где айпи' in data\
-       or 'PRIVMSG '+botName+' :!где айпи' in data:
+    if 'PRIVMSG '+channel+' :!где' in data\
+      or 'PRIVMSG '+botName+' :!где' in data:
 
-        if 'PRIVMSG '+channel+' :!где айпи' in data:
+        if 'PRIVMSG '+channel+' :!где' in data:
             where_message_whois = channel
             
-        elif 'PRIVMSG '+botName+' :!где айпи' in data:
+        elif 'PRIVMSG '+botName+' :!где' in data:
             where_message_whois = name
                       
         try:
-            whois_ip = data.split('!где айпи ',1)[1].split('\r',1)[0].strip()
-            get_whois = whois.whois(whois_ip)
+            whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
+            get_whois = whois.whois(whois_ip) 
+            
             country_whois = get_whois['country']
             city_whois = get_whois['city']
             address_whois = get_whois['address']    
@@ -269,11 +272,11 @@ while True:
                 address_whois = 'None'    
                        
             whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-            country_whois+' \x02Адресс:\x02 '+address_whois+'\r\n'
-            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply)            
+            country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
+            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
 
-        except:
-            print('get Value Error in whois servis!')
+        except IndexError:
+            print('except IndexError!')
             send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
                      
@@ -385,8 +388,8 @@ while True:
     #---------Exchange-------------
 
     # Get exchange from internet API at regular time.     
-    if 'PRIVMSG '+channel in data and '!курс эксмо' in data or 'PRIVMSG '+botName+' :!курс' in data:
-        if 'PRIVMSG '+channel in data and '!курс эксмо' in data:
+    if 'PRIVMSG '+channel in data and '!курс' in data or 'PRIVMSG '+botName+' :!курс' in data:
+        if 'PRIVMSG '+channel in data and '!курс' in data:
             where_mes_exc = channel
         if 'PRIVMSG '+botName+' :!курс' in data:
             where_mes_exc = name
