@@ -279,6 +279,11 @@ while True:
             print('except IndexError!')
             send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
+
+        except ValueError:
+            print('except ValueError!')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+из цифр, разделенных точками!\r\n')
                      
     #---------Info from link in channel-------------
     '''
