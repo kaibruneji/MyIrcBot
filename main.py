@@ -1,5 +1,4 @@
 #-------Import modules---------------------
-
 import socket
 import sys
 import time
@@ -8,12 +7,22 @@ import settings
 import translate_krzb
 import whois
 import ast
+from threading import Thread, Lock
+from time import sleep
+import os
+import copy
+from datetime import datetime
 
 from urllib.parse import unquote
 
+#delate error HTTP request certificate from my local
+#import urllib3
+#urllib3.disable_warnings()
+
 #-------Functions---------------------------
 
-# Function shortening of ic.send.  
+# Function shortening of ic.send. 
+
 def send(mes):
   return irc.send(bytes(mes,'utf-8'))
 
@@ -30,7 +39,7 @@ def link_title(n):
         except:
             print('Link wrong!')
     link = 'http://'+link_r        
-    max_t_link = 30
+    max_t_link = 7
     t_link = time.time()
     for i in requests.get(link, stream=True, verify=False):
         t2_link = time.time()
@@ -44,7 +53,7 @@ def link_title(n):
 
     if link_stat == True:
         unquoted_link = unquote(link)
-        get_title = requests.get(link, timeout = 10)
+        get_title = requests.get(link, timeout = 7)
         txt_title = get_title.text
         if '</TITLE>' in txt_title or '</title>' in txt_title\
                       or '</Title>' in txt_title:
@@ -82,7 +91,7 @@ masterName = settings.settings('masterName')
 #-------Conect to IRC-server----------------
 
 irc.connect ((network, port))
-print (irc.recv(2048).decode("UTF-8"))
+#print (irc.recv(2048).decode("UTF-8"))
 send('NICK '+botName+'\r\n')
 send('USER '+botName+' '+botName+' '+botName+' :Python IRC\r\n')
 send('JOIN '+channel+' \r\n')
@@ -137,22 +146,50 @@ dict_count = {}
 dict_voted = {}
 list_vote_ip = []
 list_users = []
+list_ascces_to_del_quote = ['Think_Ebola']
 
 # List who free from anti-flood function.
 list_floodfree = settings.settings('list_floodfree')
 list_bot_not_work = settings.settings('list_bot_not_work')
 
+#threading ping-pong auto
+lock = Lock()
+stop_th_auto_ping = False
+def ping_auto_func():
+    pong_message = "PONG :"+network+"\r\n"
+    ping_auto_count = 0
+    while True:      
+        send(pong_message)        
+        ping_auto_count += 1               
+        
+        lock.acquire()
+        if stop_th_auto_ping is True:
+            break
+        lock.release()
+        
+        sleep(20)       
+        
+th_ping_auto = Thread(target=ping_auto_func)
+
 #-------Major_while-------------------------
 
-while True:
+#run th ping-pong auto
+th_ping_auto.start()
+
+while True:    
+    #get data message   
     try:
         data = irc.recv(2048).decode("UTF-8")
     except UnicodeDecodeError:
         print('UnicodeDecodeError!!!')
         continue
+    
     # Ping-pong.
+    """
     if data.find('PING') != -1:
-        send('PONG'+data.split()[1]+'\r\n')
+        send('PONG '+data.split()[1]+'\r\n')        
+        print("worked PING-PONG request! POST messege:"+ "PONG "+data.split()[1]+"\r\n")        
+    """
     
     # Make variables Name, Message, IP from user message.
     if data.find('PRIVMSG') != -1:
@@ -188,7 +225,7 @@ while True:
         send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
 можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
-(без кавычек): \"!где айпи (IP)\", пример: \"!где айпи \
+(без кавычек): \"!где (IP)\", пример: \"!где \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
         send('NOTICE %s : ***Функция перевода с английских букв на русские \
 : \"!k tekst perevoda\", пример: \"!k ghbdtn , или пишите просто \"!k\" \
@@ -227,7 +264,8 @@ while True:
                 send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
                 dict_count[key] += 1
             elif dict_count[key] > 5 and key != 'none':
-                send('KICK '+channel+' '+key+' :Я же сказал не флуди!\r\n')
+                print('messageKick: KICK '+channel+' '+key+'\n')
+                send('KICK '+channel+' '+key+'\n')
                 dict_count[key] = 0
             
     #--------Request-answer in channel-------------
@@ -235,6 +273,11 @@ while True:
     # Out command.  
     if data.find('PRIVMSG '+channel+' :!'+botName+' quit') != -1 and name == masterName:
         send('PRIVMSG '+channel+' :Хорошо, всем счастливо оставаться!\r\n')
+        
+        lock.acquire()
+        stop_th_auto_ping = True
+        lock.release()
+        
         send('QUIT\r\n')
         sys.exit()
 
@@ -279,14 +322,14 @@ while True:
             print('except IndexError!')
             send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
-
+        
         except ValueError:
             print('except ValueError!')
             send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
-                     
+        
     #---------Info from link in channel-------------
-    '''
+    
     if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
@@ -297,7 +340,7 @@ while True:
                 send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
             except:
                 print('Error link!')
-                '''
+                
     #---------Voting--------------------------------
                 
     t = time.time()
@@ -391,98 +434,92 @@ while True:
         send(voting_results)
     
     #---------Exchange-------------
-
-    # Get exchange from internet API at regular time.     
+    # Get exchange from internet API at regular time.   
+    """
     if 'PRIVMSG '+channel in data and '!курс' in data or 'PRIVMSG '+botName+' :!курс' in data:
         if 'PRIVMSG '+channel in data and '!курс' in data:
             where_mes_exc = channel
         if 'PRIVMSG '+botName+' :!курс' in data:
             where_mes_exc = name
+        
+        #user_req_trend = "https://www.google.com/search?q=курс"+data.split("!курс")[1]
+        user_req_trend = "https://www.google.com/search?q=курс+рубля+к+доллару"
+        print("user_req_trend: "+user_req_trend+"\r\n")
+        google_trend_get_req = requests.get(user_req_trend, timeout = 7)
+        google_trend_text = google_trend_get_req.text
+        print("google:\r\n"+google_trend_text+'\r\n')
+        google_dig_trend = google_trend_text.split('data-value="')[1].split('">')[0]       
 
-        try:
-            api_exc_get = requests.get('https://api.exmo.com/v1/ticker/', timeout = 5)
-            api_exc = api_exc_get.text
-        except:
-            print('Проблемы с получением API exchange!')
-        try:
-            btc_usd = round(float(api_exc.split('"BTC_USD":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
-        except:
-            print('Проблемы с получением курса btc_usd')
-        try:
-            eth_usd = round(float(api_exc.split('"ETH_USDT":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
-        except:
-            print('Проблемы с получением курса eth_usd')
-        try:
-            usd_rub = round(float(api_exc.split('"USDT_RUB":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
-        except:
-            print('Проблемы с получением курса usd_rub')    
-        try:
-            btc_eur = round(float(api_exc.split('"BTC_EUR":',1)[1].split('"buy_price":"',1)[1].split('","',1)[0][0:]),2)
-        except:
-            print('Проблемы с получением курса btc_eur')
-
-        eur_rub = round(float(usd_rub*(btc_usd / btc_eur)),2)
-        btc_rub = round(float(btc_usd * usd_rub),2)
-
-        # Make trends symbols from last request.  
-        if btc_usd > btc_usd_old:
-            btc_usd_tend = '▲'
-        elif btc_usd < btc_usd_old:
-            btc_usd_tend = '▼'
+        send('PRIVMSG %s :%s\r\n'%(where_mes_exc,google_dig_trend))       
+        """
+    #---------Quotes-------------
+    # func to find a quote    
+    def find_quote(find_text):
+        #find numbers of all quotes
+        with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
+            num_of_all_quotes = 0
+            for line in f:
+                num_of_all_quotes += 1
+        #find a quote with user request text
+        with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:
+            count_quote = 1
+            if not find_text.isdigit():
+                for line in f:                    
+                    if find_text in line:
+                        return [count_quote, num_of_all_quotes, line]                                            
+                    count_quote += 1
+                return False
+            else:                
+                for line in f:
+                    if int(count_quote) == int(find_text):
+                        return [count_quote, num_of_all_quotes, line]                                           
+                    count_quote += 1
+                return False
+        
+    # find a quote
+    if '!q ' in data:                
+        if data.split('!q ')[1].strip() != '': 
+            quote_txt_find = data.split('!q ')[1].strip()
+            if find_quote(quote_txt_find) == False:
+                send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
+            else:
+                data_q = copy.copy(find_quote(quote_txt_find))                
+                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}\r\n') 
+                
+    # Add new quote
+    if '!aq ' in data:
+        req_user_quote = data.split('!aq ')[1].strip()        
+        #add a quote
+        if req_user_quote != '':
+            with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:            
+                f.write(f'\n{channel}|{name}|{req_user_quote} [{datetime.now().date()}]')
+            send(f'PRIVMSG {channel} :цитата добавлена под номером {find_quote(req_user_quote)[0]}\r\n')
         else:
-            btc_usd_tend = '■'
-
-        if eth_usd > eth_usd_old:
-            eth_usd_tend = '▲'
-        elif eth_usd < eth_usd_old:
-            eth_usd_tend = '▼'
+            send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!')
+    # Delete a quote    
+    if '!dq ' in data and name == masterName or name in list_ascces_to_del_quote: 
+        num_dq = data.split('!dq ')[1].strip()
+        if num_dq.isdigit():
+            if find_quote(num_dq) == False:
+                send(f'PRIVMSG {channel} :цитаты с таким номером не найдено!\r\n')
+            else:
+                #get text of quote from func
+                quote_line = find_quote(num_dq)[2]            
+                with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f, open('quotes/swapfile.txt', 'w', encoding="utf8") as swap:
+                    for line in f:
+                        if quote_line != line:
+                            swap.write(line)                        
+            
+                os.remove('quotes/'+channel.split('#')[1]+'.txt')
+                os.rename('quotes/swapfile.txt', 'quotes/'+channel.split('#')[1]+'.txt')
+            
+                send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
+        
         else:
-            eth_usd_tend = '■'    
-
-        if btc_rub > btc_rub_old:
-            btc_rub_tend = '▲'
-        elif btc_rub < btc_rub_old:
-            btc_rub_tend = '▼'
-        else:
-            btc_rub_tend = '■'    
-
-        if usd_rub > usd_rub_old:
-            usd_rub_tend = '▲'
-        elif usd_rub < usd_rub_old:
-            usd_rub_tend = '▼'
-        else:
-            usd_rub_tend = '■'
-
-        if eur_rub > eur_rub_old:
-            eur_rub_tend = '▲'
-        elif eur_rub < eur_rub_old:
-            eur_rub_tend = '▼'
-        else:
-            eur_rub_tend = '■'    
-
-        # Make variables from nubmers for make trends (see up).      
-        btc_usd_old = btc_usd
-        eth_usd_old = eth_usd
-        usd_rub_old = usd_rub
-        eur_rub_old = eur_rub
-        btc_rub_old = btc_rub        
-
-        btc_usd_str = str(btc_usd)
-        eth_usd_str = str(eth_usd)
-        usd_rub_str = str(usd_rub)
-        eur_rub_str = str(eur_rub)
-        btc_rub_str = str(btc_rub)            
-
-        send_res_exc = '\x033Курсы: \x02BTC/USD:\x02 '+btc_usd_str+\
-        ' '+btc_usd_tend+' \x02ETH/USD:\x02 '+eth_usd_str+' '+eth_usd_tend+\
-        ' \x02USD/RUB:\x02 '+usd_rub_str+' '+usd_rub_tend+' \x02EUR/RUB:\x02 '+\
-        eur_rub_str+' '+eur_rub_tend+' \x02BTC/RUB:\x02 '+btc_rub_str+\
-        ' '+btc_rub_tend+'\r\n'
-
-        send('PRIVMSG %s :%s\r\n'%(where_mes_exc,send_res_exc))
-
-    prev_message = message
+            send('PRIVMSG '+channel+' :нужно ввести номер цитаты для удаления!\r\n')            
     
+    prev_message = message
+        
     #------------Printing---------------
 
     print(data)
