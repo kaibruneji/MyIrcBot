@@ -21,10 +21,12 @@ from urllib.parse import unquote
 
 #-------Functions---------------------------
 
-# Function shortening of ic.send. 
-
+# Function shortening of irc.send. 
 def send(mes):
-  return irc.send(bytes(mes,'utf-8'))
+    #if not a PONG send
+    if 'PONG :' not in mes:
+        print(f'>> {mes}')
+    return irc.send(bytes(mes,'utf-8'))
 
 # Function of parcing of get TITLE from link.  
 def link_title(n):
@@ -96,7 +98,7 @@ send('NICK '+botName+'\r\n')
 send('USER '+botName+' '+botName+' '+botName+' :Python IRC\r\n')
 send('JOIN '+channel+' \r\n')
 send('NickServ IDENTIFY '+settings.settings('password')+'\r\n')
-send('MODE '+botName+' +x')
+#send('MODE '+botName+' +x')
 
 #-------Global_variables--------------------
    
@@ -155,11 +157,12 @@ list_bot_not_work = settings.settings('list_bot_not_work')
 #threading ping-pong auto
 lock = Lock()
 stop_th_auto_ping = False
-def ping_auto_func():
+def ping_auto_func():    
     pong_message = "PONG :"+network+"\r\n"
     ping_auto_count = 0
+    sleep(30)
     while True:      
-        send(pong_message)        
+        send(pong_message)
         ping_auto_count += 1               
         
         lock.acquire()
@@ -183,13 +186,6 @@ while True:
     except UnicodeDecodeError:
         print('UnicodeDecodeError!!!')
         continue
-    
-    # Ping-pong.
-    """
-    if data.find('PING') != -1:
-        send('PONG '+data.split()[1]+'\r\n')        
-        print("worked PING-PONG request! POST messege:"+ "PONG "+data.split()[1]+"\r\n")        
-    """
     
     # Make variables Name, Message, IP from user message.
     if data.find('PRIVMSG') != -1:
@@ -222,14 +218,17 @@ while True:
         send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
 (пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
 установится на 60 сек\r\n' %(name))
-        send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
-можно и в приват боту\r\n' %(name))
+        #send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
+#можно и в приват боту\r\n' %(name))
         send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где (IP)\", пример: \"!где \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
         send('NOTICE %s : ***Функция перевода с английских букв на русские \
 : \"!k tekst perevoda\", пример: \"!k ghbdtn , или пишите просто \"!k\" \
 чтобы перевести предыдущее сообщение\r\n' %(name))
+        send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: [!q (фраза поиска для цитаты или её номер)] \
+Добавление цитаты: [!aq (фраза для добавления в цитаты)] \
+Удаление цитаты (доступно только людям из списка): [!dq (номер цитаты)]\r\n' %(name))
 
     #-----------Anti_flood-------------
 
@@ -263,9 +262,8 @@ while True:
             if dict_count[key] == 3 and key != 'none':
                 send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
                 dict_count[key] += 1
-            elif dict_count[key] > 5 and key != 'none':
-                print('messageKick: KICK '+channel+' '+key+'\n')
-                send('KICK '+channel+' '+key+'\n')
+            elif dict_count[key] > 5 and key != 'none':                
+                send('KICK '+channel+' '+key+', я же сказал не флуди!\r\n')                
                 dict_count[key] = 0
             
     #--------Request-answer in channel-------------
@@ -510,7 +508,7 @@ while True:
                         if quote_line != line:
                             swap.write(line)                        
             
-                os.remove('quotes/'+channel.split('#')[1]+'.txt')
+                os.remove('quotes/'+channel.split('#')[1]+'.txt')                
                 os.rename('quotes/swapfile.txt', 'quotes/'+channel.split('#')[1]+'.txt')
             
                 send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
