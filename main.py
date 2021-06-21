@@ -177,7 +177,7 @@ th_ping_auto = Thread(target=ping_auto_func)
 th_ping_auto.start()
 
 while True:    
-    #get data message   
+    #get data message 
     try:
         data = irc.recv(2048).decode("UTF-8")
     except UnicodeDecodeError:
@@ -492,7 +492,8 @@ while True:
         num_all_q = copy.copy(find_quote('1', 1))
         random_num_quote = randint(1, (num_all_q[1]))
         data_q = find_quote(str(random_num_quote), 1)        
-        send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}')
+        send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+{data_q[2].split("|")[2]}')
         
     # find a quote
     if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n':
@@ -502,9 +503,11 @@ while True:
         else:
             data_q = copy.copy(find_quote(quote_txt_find, 1))
             if data_q[3] == 0:
-                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}')
+                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+{data_q[2].split("|")[2]}')
             else:
-                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel).strip()} ({data_q[3]} twins)\n')
+                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+[{data_q[3]}] {data_q[2].split("|")[2]}')
             
     # finde a quote with last request but next quote
     if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n':
@@ -515,7 +518,8 @@ while True:
             if data_q == False:
                 send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
             else:                
-                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2] .strip(channel).strip()} ({num_next_quote} of {data_q[3]} twins)\n')
+                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+[{num_next_quote}/{data_q[3]}] {data_q[2].split("|")[2]}')
                 
     # Add a new quote
     switch_add_q = False
