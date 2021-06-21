@@ -12,6 +12,7 @@ from time import sleep
 import os
 import copy
 from datetime import datetime
+from random import randint
 
 from urllib.parse import unquote
 
@@ -54,20 +55,16 @@ def link_title(n):
             link_stat = True
 
     if link_stat == True:
-        unquoted_link = unquote(link)
         get_title = requests.get(link, timeout = 7)
         txt_title = get_title.text
         if '</TITLE>' in txt_title or '</title>' in txt_title\
                       or '</Title>' in txt_title:
             if '</TITLE>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+\
-                txt_title.split('</TITLE>',1)[0].split('>')[-1]
+                title = '\x02Title\x02: '+ txt_title.split('</TITLE>',1)[0].split('>')[-1]
             elif '</title>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+\
-                txt_title.split('</title>',1)[0].split('>')[-1]
+                title = '\x02Title\x02: '+ txt_title.split('</title>',1)[0].split('>')[-1]
             elif '</Title>' in txt_title:
-                title = '\x02Title\x02 of '+unquoted_link+': '+\
-                txt_title.split('</Title>',1)[0].split('>')[-1]
+                title = '\x02Title\x02: '+ txt_title.split('</Title>',1)[0].split('>')[-1]
 
             return title.replace('\r','').replace('\n','').replace\
                    ('www.','').replace('http://','').replace\
@@ -226,7 +223,9 @@ while True:
         send('NOTICE %s : ***Функция перевода с английских букв на русские \
 : \"!k tekst perevoda\", пример: \"!k ghbdtn , или пишите просто \"!k\" \
 чтобы перевести предыдущее сообщение\r\n' %(name))
-        send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: [!q (фраза поиска для цитаты или её номер)] \
+        send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: Случайная цитата: [!q] \
+[!q (фраза поиска для цитаты или её номер)] Поиск следующей цитаты с той же поисковой \
+фразой:[!q(номер от 1 до бесконечности) (поисковая фраза)], "например: !q2 ситроен" \
 Добавление цитаты: [!aq (фраза для добавления в цитаты)] \
 Удаление цитаты (доступно только людям из списка): [!dq (номер цитаты)]\r\n' %(name))
 
@@ -263,7 +262,7 @@ while True:
                 send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
                 dict_count[key] += 1
             elif dict_count[key] > 5 and key != 'none':                
-                send('KICK '+channel+' '+key+', я же сказал не флуди!\r\n')                
+                send('KICK '+channel+' '+key+' :я же сказал не флуди!\r\n')                
                 dict_count[key] = 0
             
     #--------Request-answer in channel-------------
@@ -452,69 +451,114 @@ while True:
         """
     #---------Quotes-------------
     # func to find a quote    
-    def find_quote(find_text):
+    def find_quote(find_text, num_quote):
         #find numbers of all quotes
         with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
             num_of_all_quotes = 0
+            count_twin_q = 0
+            count_quote = 1
             for line in f:
                 num_of_all_quotes += 1
-        #find a quote with user request text
-        with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:
-            count_quote = 1
-            if not find_text.isdigit():
+        #find a not digit request for quote        
+        if not find_text.isdigit():
+            #...find a number of all twins 
+            with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:                                            
                 for line in f:                    
                     if find_text in line:
-                        return [count_quote, num_of_all_quotes, line]                                            
-                    count_quote += 1
-                return False
-            else:                
+                        count_twin_q += 1
+                            
+            #find a quote with user request text
+            with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:                    
+                    count_next = num_quote                
+                    for line in f:
+                        if find_text in line: 
+                            if count_next == 1:                                
+                                return [count_quote, num_of_all_quotes, line, count_twin_q]                                
+                            else:
+                                count_next -= 1
+                        count_quote += 1
+                    return False
+        # find a numeric quote            
+        else:
+            with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
                 for line in f:
-                    if int(count_quote) == int(find_text):
-                        return [count_quote, num_of_all_quotes, line]                                           
+                    if int(count_quote) == int(find_text):                        
+                        return [count_quote, num_of_all_quotes, line, count_twin_q]
                     count_quote += 1
                 return False
+    
+    # show random quote
+    if f'PRIVMSG {channel} :!q\r\n' in data:
+        num_all_q = copy.copy(find_quote('1', 1))
+        random_num_quote = randint(1, (num_all_q[1]))
+        data_q = find_quote(str(random_num_quote), 1)        
+        send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}')
         
     # find a quote
-    if '!q ' in data:                
-        if data.split('!q ')[1].strip() != '': 
-            quote_txt_find = data.split('!q ')[1].strip()
-            if find_quote(quote_txt_find) == False:
-                send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
+    if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n':
+        quote_txt_find = data.split('!q ')[1].strip()
+        if find_quote(quote_txt_find, 1) == False:
+            send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
+        else:
+            data_q = copy.copy(find_quote(quote_txt_find, 1))
+            if data_q[3] == 0:
+                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}')
             else:
-                data_q = copy.copy(find_quote(quote_txt_find))                
-                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel)}\r\n') 
+                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2].strip(channel).strip()} ({data_q[3]} twins)\n')
+            
+    # finde a quote with last request but next quote
+    if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n':
+        if data.split('!q')[1].split(' ')[0].isdigit():
+            num_next_quote = data.split('!q')[1].split(' ')[0]            
+            quote_txt_find = data.split('!q')[1].split(' ')[1].strip()            
+            data_q = copy.copy(find_quote(quote_txt_find, int(num_next_quote)))
+            if data_q == False:
+                send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
+            else:                
+                send(f'PRIVMSG {channel} :({data_q[0]} of {data_q[1]}) {data_q[2] .strip(channel).strip()} ({num_next_quote} of {data_q[3]} twins)\n')
                 
-    # Add new quote
-    if '!aq ' in data:
+    # Add a new quote
+    switch_add_q = False
+    if f'PRIVMSG {channel} :!aq ' in data:
         req_user_quote = data.split('!aq ')[1].strip()        
         #add a quote
         if req_user_quote != '':
             with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:            
                 f.write(f'\n{channel}|{name}|{req_user_quote} [{datetime.now().date()}]')
-            send(f'PRIVMSG {channel} :цитата добавлена под номером {find_quote(req_user_quote)[0]}\r\n')
+                switch_add_q = True
         else:
             send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!')
-    # Delete a quote    
-    if '!dq ' in data and name == masterName or name in list_ascces_to_del_quote: 
-        num_dq = data.split('!dq ')[1].strip()
-        if num_dq.isdigit():
-            if find_quote(num_dq) == False:
-                send(f'PRIVMSG {channel} :цитаты с таким номером не найдено!\r\n')
+                
+        if switch_add_q == True:        
+            data_q = copy.copy(find_quote(req_user_quote, int(1)))
+            if data_q == False:    
+                send(f'PRIVMSG {channel} :цитата добавлена, но его номер не получен\n')
             else:
-                #get text of quote from func
-                quote_line = find_quote(num_dq)[2]            
-                with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f, open('quotes/swapfile.txt', 'w', encoding="utf8") as swap:
-                    for line in f:
-                        if quote_line != line:
-                            swap.write(line)                        
+                send(f'PRIVMSG {channel} :цитата добавлена под номером {data_q[0]}\n')
+            switch_add_q = False
+    
+    # Delete a quote    
+    if f'PRIVMSG {channel} :!dq' in data:
+        if name == masterName or name in list_ascces_to_del_quote: 
+            num_dq = data.split('!dq ')[1].strip()
+            if num_dq.isdigit():
+                if find_quote(num_dq, 1) == False:
+                    send(f'PRIVMSG {channel} :цитаты с таким номером не найдено!\r\n')
+                else:
+                    #get text of quote from func
+                    quote_line = find_quote(num_dq, 1)[2]            
+                    with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f, open('quotes/swapfile.txt', 'w', encoding="utf8") as swap:
+                        for line in f:
+                            if quote_line != line:
+                                swap.write(line)                        
             
-                os.remove('quotes/'+channel.split('#')[1]+'.txt')                
-                os.rename('quotes/swapfile.txt', 'quotes/'+channel.split('#')[1]+'.txt')
+                    os.remove('quotes/'+channel.split('#')[1]+'.txt')                
+                    os.rename('quotes/swapfile.txt', 'quotes/'+channel.split('#')[1]+'.txt')
             
-                send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
+                    send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
         
-        else:
-            send('PRIVMSG '+channel+' :нужно ввести номер цитаты для удаления!\r\n')            
+            else:
+                send('PRIVMSG '+channel+' :нужно ввести номер цитаты для удаления!\r\n')            
     
     prev_message = message
         
