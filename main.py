@@ -450,8 +450,9 @@ while True:
         send('PRIVMSG %s :%s\r\n'%(where_mes_exc,google_dig_trend))       
         """
     #---------Quotes-------------
+    
     # func to find a quote    
-    def find_quote(find_text, num_quote):
+    def find_quote(find_text, num_quote = 1):
         #find numbers of all quotes
         with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
             num_of_all_quotes = 0
@@ -487,29 +488,43 @@ while True:
                     count_quote += 1
                 return False
     
-    # show random quote
+    # show a random quote
     if f'PRIVMSG {channel} :!q\r\n' in data:
-        num_all_q = copy.copy(find_quote('1', 1))
+        num_all_q = copy.copy(find_quote('1'))
         random_num_quote = randint(1, (num_all_q[1]))
-        data_q = find_quote(str(random_num_quote), 1)        
-        send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-{data_q[2].split("|")[2]}')
+        data_q = find_quote(str(random_num_quote))
+        send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
+{data_q[2].split("|")[2]}\n')
         
     # find a quote
     if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n':
         quote_txt_find = data.split('!q ')[1].strip()
-        if find_quote(quote_txt_find, 1) == False:
-            send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
+        if find_quote(quote_txt_find) == False:
+            send(f'PRIVMSG {channel} :такой цитаты не найдено!\n')
         else:
-            data_q = copy.copy(find_quote(quote_txt_find, 1))
+            data_q = copy.copy(find_quote(quote_txt_find))
+            #if search by digit
             if data_q[3] == 0:
-                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-{data_q[2].split("|")[2]}')
+                #if no time stamp!
+                if data_q[2].count("|") == 2: 
+                    send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
+{data_q[2].split("|")[2]}\n')
+                #if time stamp in quote file!
+                else:
+                    send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
+{data_q[2].split("|")[3]}\n')
+            #if search by string
             else:
-                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-[{data_q[3]}] {data_q[2].split("|")[2]}')
+                #if no time stamp!
+                if data_q[2].count("|") == 2:
+                    send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+[{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
+                #if time stamp in quote file!
+                else:
+                    send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
+[{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
             
-    # finde a quote with last request but next quote
+    # find a quote with last request but next quote
     if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n':
         if data.split('!q')[1].split(' ')[0].isdigit():
             num_next_quote = data.split('!q')[1].split(' ')[0]            
@@ -517,24 +532,33 @@ while True:
             data_q = copy.copy(find_quote(quote_txt_find, int(num_next_quote)))
             if data_q == False:
                 send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
-            else:                
-                send(f'PRIVMSG {channel} :({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-[{num_next_quote}/{data_q[3]}] {data_q[2].split("|")[2]}')
+            else:
+                #if no time stamp!
+                if data_q[2].count("|") == 2:
+                    send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[2]}')
+                #if time stamp in quote file!
+                else:
+                    send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
+[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}')
                 
     # Add a new quote
     switch_add_q = False
     if f'PRIVMSG {channel} :!aq ' in data:
         req_user_quote = data.split('!aq ')[1].strip()        
         #add a quote
-        if req_user_quote != '':
+        if '|' in req_user_quote:
+            send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')
+            break
+        elif req_user_quote != '':
             with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:            
-                f.write(f'\n{channel}|{name}|{req_user_quote} [{datetime.now().date()}]')
+                f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
                 switch_add_q = True
         else:
             send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!')
                 
         if switch_add_q == True:        
-            data_q = copy.copy(find_quote(req_user_quote, int(1)))
+            data_q = copy.copy(find_quote(req_user_quote))
             if data_q == False:    
                 send(f'PRIVMSG {channel} :цитата добавлена, но его номер не получен\n')
             else:
