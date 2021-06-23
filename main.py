@@ -193,16 +193,16 @@ while True:
     except:
         print('no ip_user on 73 line')        
     
-    #-----------Translate_krzb---------    
-
-    if ' :!k' in data:
+    #-----------Translate_krzb---------
+    #if a user inter a command !t and text for translate
+    if ' :!t' in data:
         if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
             if 'PRIVMSG '+channel in data:
                 where_message = channel            
             elif 'PRIVMSG '+botName in data:
                 where_message = name            
-            if '!k ' in data:
-                tr_txt = message.split('!k ',1)[1].strip()
+            if '!t ' in data:
+                tr_txt = message.split('!t ',1)[1].strip()
             else:
                 tr_txt = prev_message
             res_txt = translate_krzb.tr(tr_txt)
@@ -221,7 +221,7 @@ while True:
 (без кавычек): \"!где (IP)\", пример: \"!где \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
         send('NOTICE %s : ***Функция перевода с английских букв на русские \
-: \"!k tekst perevoda\", пример: \"!k ghbdtn , или пишите просто \"!k\" \
+: \"!t tekst perevoda\", пример: \"!t ghbdtn , или пишите просто \"!t\" \
 чтобы перевести предыдущее сообщение\r\n' %(name))
         send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: Случайная цитата: [!q] \
 [!q (фраза поиска для цитаты или её номер)] Поиск следующей цитаты с той же поисковой \
@@ -552,7 +552,7 @@ while True:
             break
         elif req_user_quote != '':
             with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:            
-                f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
+                f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}')
                 switch_add_q = True
         else:
             send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!')
