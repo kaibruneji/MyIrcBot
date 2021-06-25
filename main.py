@@ -42,7 +42,7 @@ def link_title(n):
         except:
             print('Link wrong!')
     link = 'http://'+link_r        
-    max_t_link = 7
+    max_t_link = 3
     t_link = time.time()
     for i in requests.get(link, stream=True, verify=False):
         t2_link = time.time()
@@ -55,7 +55,7 @@ def link_title(n):
             link_stat = True
 
     if link_stat == True:
-        get_title = requests.get(link, timeout = 7)
+        get_title = requests.get(link, timeout = 3)
         txt_title = get_title.text
         if '</TITLE>' in txt_title or '</title>' in txt_title\
                       or '</Title>' in txt_title:
@@ -330,8 +330,11 @@ while True:
     if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
+            text_title = link_title(data)
+            print(f'----text_title: {text_title}\n')
             try:
-                send('PRIVMSG %s :%s\r\n'%(channel,link_title(data)))
+                if text_title.strip() != 'None':
+                    send('PRIVMSG %s :%s\r\n'%(channel,text_title))
             except requests.exceptions.ConnectionError:
                 print('Ошибка получения Title (requests.exceptions.ConnectionError)')
                 send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
