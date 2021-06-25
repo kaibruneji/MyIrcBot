@@ -70,7 +70,7 @@ def link_title(n):
                    ('www.','').replace('http://','').replace\
                    ('https://','').strip()
         else:
-            return 'Title is no'
+            print('---Title is no!\n')
           
 #-------Global changes variables------------
 
@@ -568,20 +568,22 @@ while True:
     # Delete a quote    
     if f'PRIVMSG {channel} :!dq' in data:
         if name == masterName or name in list_ascces_to_del_quote: 
-            num_dq = data.split('!dq ')[1].strip()
+            num_dq = data.split('!dq ')[1].strip()            
             if num_dq.isdigit():
-                if find_quote(num_dq, 1) == False:
+                data_q = copy.copy(find_quote(num_dq))
+                if data_q == False:
                     send(f'PRIVMSG {channel} :цитаты с таким номером не найдено!\r\n')
-                else:
-                    #get text of quote from func
-                    quote_line = find_quote(num_dq, 1)[2]            
-                    with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f, open('quotes/swapfile.txt', 'w', encoding="utf8") as swap:
-                        for line in f:
-                            if quote_line != line:
-                                swap.write(line)                        
-            
-                    os.remove('quotes/'+channel.split('#')[1]+'.txt')                
-                    os.rename('quotes/swapfile.txt', 'quotes/'+channel.split('#')[1]+'.txt')
+                else:        
+                    with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:
+                        q_file = f.read()                        
+                    with open('quotes/'+channel.split('#')[1]+'.txt', 'w', encoding="utf8") as f:
+                        #if delete a last quote - delate and empty string
+                        if str(num_dq) == str(data_q[1]):                            
+                            f.write(q_file.replace(f'\n{data_q[2]}',''))
+                        #if delete not a last quote
+                        else:
+                            print('if delete not a last quote\n')
+                            f.write(q_file.replace(data_q[2],''))                        
             
                     send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
         
