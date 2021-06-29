@@ -539,11 +539,11 @@ while True:
                 #if no time stamp!
                 if data_q[2].count("|") == 2:
                     send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[2]}')
+[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
                 #if time stamp in quote file!
                 else:
                     send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
-[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}')
+[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
                 
     # Add a new quote
     switch_add_q = False
