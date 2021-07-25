@@ -327,19 +327,22 @@ while True:
         
     #---------Info from link in channel-------------
     
-    if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-       not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
-        if 'http://' in data or 'https://' in data or 'www.' in data:
-            text_title = link_title(data)
-            print(f'----text_title: {text_title}\n')
-            try:
-                if text_title.strip() != 'None':
-                    send('PRIVMSG %s :%s\r\n'%(channel,text_title))
-            except requests.exceptions.ConnectionError:
-                print('Ошибка получения Title (requests.exceptions.ConnectionError)')
-                send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
-            except:
-                print('Error link!')
+    try:
+        if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
+           not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
+            if 'http://' in data or 'https://' in data or 'www.' in data:
+                text_title = link_title(data)
+                print(f'----text_title: {text_title}\n')
+                try:
+                    if text_title.strip() != 'None':
+                        send('PRIVMSG %s :%s\r\n'%(channel,text_title))
+                except requests.exceptions.ConnectionError:
+                    print('Ошибка получения Title (requests.exceptions.ConnectionError)')
+                    send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
+                except:
+                    print('Error link!')
+    except:
+        send(f'PRIVMSG {channel} :oops, a problem with the link\n')
                 
     #---------Voting--------------------------------
                 
@@ -455,7 +458,7 @@ while True:
     #---------Quotes-------------
     
     # func to find a quote    
-    def find_quote(find_text, num_quote = 1):
+    def find_quote(find_text, num_quote = 1, is_add_quote = False):
         #find numbers of all quotes
         with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
             num_of_all_quotes = 0
@@ -473,23 +476,39 @@ while True:
                             
             #find a quote with user request text
             with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:                    
-                    count_next = num_quote                
-                    for line in f:
-                        if find_text in line: 
-                            if count_next == 1:                                
-                                return [count_quote, num_of_all_quotes, line, count_twin_q]                                
-                            else:
-                                count_next -= 1
-                        count_quote += 1
-                    return False
+                    count_next = num_quote
+                    if is_add_quote == False:
+                        for line in f:
+                            if find_text in line: 
+                                if count_next == 1:                                
+                                    return [count_quote, num_of_all_quotes, line, count_twin_q]                                
+                                else:
+                                    count_next -= 1
+                            count_quote += 1
+                    else:
+                        line_txt = ""
+                        for line in f:
+                            if line.count("|") == 2:
+                                line_txt = line.split('|')[2].strip()
+                            if line.count("|") == 3:
+                                line_txt = line.split('|')[3].strip()
+                            
+                            if find_text == line_txt: 
+                                if count_next == 1:
+                                    print(f"count_quote: {count_quote}\nnum_of_all_quotes: {num_of_all_quotes}\nline: {line}\ncount_twin_q: {count_twin_q}")
+                                    return [count_quote, num_of_all_quotes, line, count_twin_q]                                
+                                else:
+                                    count_next -= 1
+                            count_quote += 1
+                                
+                    
         # find a numeric quote            
         else:
             with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
                 for line in f:
                     if int(count_quote) == int(find_text):                        
                         return [count_quote, num_of_all_quotes, line, count_twin_q]
-                    count_quote += 1
-                return False
+                    count_quote += 1                
     
     # show a random quote
     if f'PRIVMSG {channel} :!q\r\n' in data:
@@ -548,20 +567,24 @@ while True:
     # Add a new quote
     switch_add_q = False
     if f'PRIVMSG {channel} :!aq ' in data:
-        req_user_quote = data.split('!aq ')[1].strip()        
+        req_user_quote = data.split('!aq ')[1].strip()
+        
         #add a quote
         if '|' in req_user_quote:
             send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')
             break
-        elif req_user_quote != '':
+        elif req_user_quote == '':
+            send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
+        elif req_user_quote[0].isnumeric():
+            send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
+        else:            
             with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:            
                 f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}')
                 switch_add_q = True
-        else:
-            send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!')
                 
+        #get and show number of added a quote        
         if switch_add_q == True:        
-            data_q = copy.copy(find_quote(req_user_quote))
+            data_q = copy.copy(find_quote(req_user_quote, 1, True))
             if data_q == False:    
                 send(f'PRIVMSG {channel} :цитата добавлена, но его номер не получен\n')
             else:
