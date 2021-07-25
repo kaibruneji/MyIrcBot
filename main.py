@@ -466,6 +466,7 @@ while True:
             count_quote = 1
             for line in f:
                 num_of_all_quotes += 1
+                
         #find a not digit request for quote        
         if not find_text.isdigit():
             #...find a number of all twins 
@@ -485,6 +486,8 @@ while True:
                                 else:
                                     count_next -= 1
                             count_quote += 1
+                        return False
+                    #if find for add a quote        
                     else:
                         line_txt = ""
                         for line in f:
@@ -500,7 +503,7 @@ while True:
                                 else:
                                     count_next -= 1
                             count_quote += 1
-                                
+                        return False        
                     
         # find a numeric quote            
         else:
