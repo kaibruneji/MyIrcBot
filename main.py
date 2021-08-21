@@ -1,3 +1,6 @@
+
+# -*- coding: utf-8 -*-
+
 #-------Import modules---------------------
 import socket
 import sys
@@ -15,6 +18,11 @@ from datetime import datetime
 from random import randint
 
 from urllib.parse import unquote
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+from bs4 import BeautifulSoup
+
 
 #delate error HTTP request certificate from my local
 #import urllib3
@@ -55,23 +63,31 @@ def link_title(n):
             link_stat = True
 
     if link_stat == True:
-        get_title = requests.get(link, timeout = 3)
-        txt_title = get_title.text
-        if '</TITLE>' in txt_title or '</title>' in txt_title\
-                      or '</Title>' in txt_title:
-            if '</TITLE>' in txt_title:
-                title = '\x02Title\x02: '+ txt_title.split('</TITLE>',1)[0].split('>')[-1]
-            elif '</title>' in txt_title:
-                title = '\x02Title\x02: '+ txt_title.split('</title>',1)[0].split('>')[-1]
-            elif '</Title>' in txt_title:
-                title = '\x02Title\x02: '+ txt_title.split('</Title>',1)[0].split('>')[-1]
+        req = requests.get(link, timeout = 3)
+        soup = BeautifulSoup(req.content, 'html.parser')
 
-            return title.replace('\r','').replace('\n','').replace\
-                   ('www.','').replace('http://','').replace\
-                   ('https://','').strip()
+        if soup.title.text: 
+            return "Title: {title}".format(title = soup.title.text)
         else:
-            print('---Title is no!\n')
-          
+            print("No title")
+
+
+def check_link(data):
+    #---------Info from link in channel-------------
+    
+    try:
+        if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
+           not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
+            if 'http://' in data or 'https://' in data or 'www.' in data:
+                print(data)
+                text_title = link_title(data)
+                print(f'----text_title: {text_title}\n')
+                send("PRIVMSG {channel} :{title}\r\n".format(channel = channel, title = text_title))
+    except:
+        send(f'PRIVMSG {channel} :oops, a problem with the link\n')
+                
+ 
+            
 #-------Global changes variables------------
 
 # Install min & max timer vote.  
@@ -324,26 +340,11 @@ while True:
             print('except ValueError!')
             send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
 из цифр, разделенных точками!\r\n')
-        
+
     #---------Info from link in channel-------------
-    
-    try:
-        if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-           not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
-            if 'http://' in data or 'https://' in data or 'www.' in data:
-                text_title = link_title(data)
-                print(f'----text_title: {text_title}\n')
-                try:
-                    if text_title.strip() != 'None':
-                        send('PRIVMSG %s :%s\r\n'%(channel,text_title))
-                except requests.exceptions.ConnectionError:
-                    print('Ошибка получения Title (requests.exceptions.ConnectionError)')
-                    send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
-                except:
-                    print('Error link!')
-    except:
-        send(f'PRIVMSG {channel} :oops, a problem with the link\n')
-                
+
+    check_link(data)
+            
     #---------Voting--------------------------------
                 
     t = time.time()
