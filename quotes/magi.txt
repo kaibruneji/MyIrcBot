@@ -1,0 +1,2 @@
+#magi|nickname1|it is a old quote without a datetime stamp
+#magi|2021-08-12|nickname2|it is a new quote with a datetime stamp
