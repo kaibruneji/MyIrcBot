@@ -69,11 +69,8 @@ def link_title(n):
             title_finish =  title.replace('\r','').replace('\n','').replace\
                    ('www.','').replace('http://','').replace\
                    ('https://','').strip()
-                   
-            title_finish.encoding = 'utf-8'
             
-            return
-            
+            return title_finish            
             
         else:
             print('---Title is no!\n')
@@ -318,29 +315,25 @@ while True:
         
     #---------Info from link in channel-------------
     
-    try:
-        if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-           not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
-            if 'http://' in data or 'https://' in data or 'www.' in data:
-                text_title = link_title(data)
-                print(f'----text_title: {text_title}\n')
-                try:
-                    if text_title.strip() != 'None':
-                        send('PRIVMSG %s :%s\r\n'%(channel,text_title))
-                except requests.exceptions.ConnectionError:
-                    print('Ошибка получения Title (requests.exceptions.ConnectionError)')
-                    send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\r\n')
-                except:
-                    print('Error link!')
-    except:
-        send(f'PRIVMSG {channel} :oops, a problem with the link\n')
+    if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
+        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
+        if 'http://' in data or 'https://' in data or 'www.' in data:
+            try:
+                text_title = link_title(data)            
+                if text_title.strip() != 'None':
+                    send('PRIVMSG %s :%s\r\n'%(channel,text_title))
+            except requests.exceptions.ConnectionError:
+                print('Ошибка получения Title (requests.exceptions.ConnectionError)\n')
+                send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\n')
+            except:
+                print('Error link!\n')   
                 
     #---------Voting--------------------------------
                 
     t = time.time()
     if '!стоп опрос' in data and 'PRIVMSG' in data and name == masterName:
         t2 = 0
-        print('счетчик опроса сброшен хозяином!')
+        print('счетчик опроса сброшен хозяином!\n')
     if 'PRIVMSG '+channel+' :!опрос ' in data and ip_user not in list_bot_not_work:
         if t2 == 0 or t > t2+time_vote:
             if ' сек ' not in data:
@@ -628,4 +621,4 @@ while True:
         
     #------------Printing---------------
 
-    print(data)
+    print(data)    
