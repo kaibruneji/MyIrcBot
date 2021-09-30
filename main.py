@@ -571,8 +571,7 @@ while True:
         
         #add a quote
         if '|' in req_user_quote:
-            send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')
-            break
+            send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')            
         elif req_user_quote == '':
             send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
         elif req_user_quote[0].isnumeric():
@@ -621,4 +620,4 @@ while True:
         
     #------------Printing---------------
 
-    print(data)    
+    print(f"{data}************************")    
