@@ -504,8 +504,14 @@ while True:
             num_all_q = copy.copy(find_quote('1'))
             random_num_quote = randint(1, (num_all_q[1]))
             data_q = find_quote(str(random_num_quote))
-            send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
+            #if no time stamp!
+            if data_q[2].count("|") == 2: 
+                send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
 {data_q[2].split("|")[2]}\n')
+            #if time stamp in quote file!
+            else:
+                send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
+{data_q[2].split("|")[3]}\n')
         except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
             
         
@@ -593,7 +599,7 @@ while True:
             switch_add_q = False
         
         #rewrite a file quotes for www
-        quote_www.makeFileWWW('quotes/'+channel.split('#')[1]+'.txt', channel)
+        quote_www.makeFileWWW(channel.split('#')[1])
     
     # Delete a quote    
     if f'PRIVMSG {channel} :!dq' in data:

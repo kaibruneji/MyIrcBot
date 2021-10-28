@@ -7,26 +7,26 @@
 import sys
 import re
 
-#----- Settings ------
+#----- Settings -----
 
-
-OutFile = "/var/www/oldrazor.ru/public_html/magi.html"
 swapFile = ""
 
 #----- main ------
 
-def makeFileWWW(fileName, channel):
-    OutFile = f"/var/www/oldrazor.ru/public_html/{re.sub('txt','html',fileName)}.html"
+def makeFileWWW(channel):
+    inFile = f'quotes/{channel}.txt'
+    #outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
+    outFile = f'{channel}.html'
+    swapFile = ""
     
-    with open(fileName, 'r', encoding='utf8') as f:                
-        #f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}')
+    with open(inFile, 'r', encoding='utf8') as f:  
         swapFile = f.read()
     
-     reFile = re.sub('channel','<br>',swapFile)
+    reFile = re.sub(f'#{channel}','</p><p>',swapFile)
      
-     with open(OutFile, 'w', encoding='utf-8') as f:
-         f.write(f'<html>\n<head><title>\nquotes of #magi\n</title>\n\
-         <meta charset="utf-8">\n<meta name="robots" content="noindex"/>\n\
-         </head>\n<body>\n<p>{reFile}\n</p>\n</body>\n</html>')
+    with open(outFile, 'w', encoding='utf-8') as f:
+        f.write(f'<html>\n<head><title>\nquotes of #magi\n</title>\n\
+        <meta charset="utf-8">\n<meta name="robots" content="noindex"/>\n\
+        </head>\n<body>\n<p>{reFile}\n</p>\n</body>\n</html>')
    
    
