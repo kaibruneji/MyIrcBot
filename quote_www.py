@@ -15,8 +15,8 @@ swapFile = ""
 
 def makeFileWWW(channel):
     inFile = f'quotes/{channel}.txt'
-    #outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
-    outFile = f'{channel}.html'
+    outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
+    #outFile = f'{channel}.html'
     swapFile = ""
     
     with open(inFile, 'r', encoding='utf8') as f:  
