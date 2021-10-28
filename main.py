@@ -13,6 +13,7 @@ import os
 import copy
 from datetime import datetime
 from random import randint
+import quote_www
 
 from urllib.parse import unquote
 
@@ -247,10 +248,10 @@ while True:
     if data.find('PRIVMSG') != -1 and name not in list_floodfree:
         for key in dict_count: 
             if dict_count[key] == 3 and key != 'none':
-                send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
+                #send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
                 dict_count[key] += 1
             elif dict_count[key] > 5 and key != 'none':                
-                send('KICK '+channel+' '+key+' :я же сказал не флуди!\r\n')                
+                #send('KICK '+channel+' '+key+' :я же сказал не флуди!\r\n')                
                 dict_count[key] = 0
             
     #--------Request-answer in channel-------------
@@ -590,6 +591,9 @@ while True:
             else:
                 send(f'PRIVMSG {channel} :цитата добавлена под номером {data_q[0]}\n')
             switch_add_q = False
+        
+        #rewrite a file quotes for www
+        quote_www.makeFileWWW('quotes/'+channel.split('#')[1]+'.txt', channel)
     
     # Delete a quote    
     if f'PRIVMSG {channel} :!dq' in data:
