@@ -16,6 +16,8 @@ swapFile = ""
 #----- main ------
 
 def makeFileWWW(fileName, channel):
+    OutFile = f"/var/www/oldrazor.ru/public_html/{re.sub('txt','html',fileName)}.html"
+    
     with open(fileName, 'r', encoding='utf8') as f:                
         #f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}')
         swapFile = f.read()
