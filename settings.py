@@ -2,7 +2,7 @@ import json
 
 network = 'irc.tambov.ru'
 port = 7770
-botName = 'botty'
+botName = 'nemo'
 masterName = 'Кай'
 list_floodfree = ['Батый', 'Батый_', botName, masterName]
 list_bot_not_work = ['iphone.telenet.ru', 'ec2-54-211-164-67.compute-1.amazonaws.com']

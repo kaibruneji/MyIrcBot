@@ -130,9 +130,6 @@ usd_rub_su = str('')
 eur_rub_su = str('')
 time_vote = 0
 
-time_of_ping = time.time()
-time_of_ping_plus = 60
-
 whois_ip = ''
 whois_ip_get_text = ''
 
@@ -158,20 +155,25 @@ list_ascces_to_del_quote = ['Think_Ebola']
 list_floodfree = settings.settings('list_floodfree')
 list_bot_not_work = settings.settings('list_bot_not_work')
 
+#-------Data for Def from bots--------------
+
+list_def_from_bots = []
+
 #-------Major_while-------------------------
 
-while True:  
-
-    #-----------Ping-Pong -------------
-    if time_of_ping + time_of_ping_plus < time.time():
-        send(f"PRIVMSG :PONG :{network}\n")
-        time_of_ping = time.time()
+while True:      
   
     #----------get data message---------- 
     try:
         data = irc.recv(2048).decode("UTF-8")
     except UnicodeDecodeError:
-        print('UnicodeDecodeError!!!')        
+        print('UnicodeDecodeError!!!') 
+
+    #-----------Ping-Pong -------------    
+    if data.find('PING') != -1:
+        print('PING: '+data)
+        print('PONG: '+'PONG '+data.split()[1]+'\r\n')
+        send('PONG '+data.split()[1]+'\r\n')        
     
     # Make variables Name, Message, IP from user message.
     if data.find('PRIVMSG') != -1:
@@ -180,8 +182,8 @@ while True:
     try:
         ip_user=data.split('@',1)[1].split(' ',1)[0]
     except:
-        print('no ip_user on 73 line')      
-    
+        print("no ip")
+        
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
     if ' :!t' in data:
@@ -629,5 +631,4 @@ while True:
     prev_message = message
         
     #------------Printing---------------
-
-    print(f"{data}************************")    
+    print(f"<<<<{data}")
