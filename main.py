@@ -112,7 +112,6 @@ count_voting = 0
 count_vote_plus = 0
 count_vote_minus = 0
 count_vote_all = 0
-while_count = 0
 
 btc_usd = 0
 eth_usd = 0
@@ -142,10 +141,11 @@ t2 = 0
 send_NAMES_on_off = True
 JOIN_time = 0
 
+switch_add_q = False
+ip_user_not_ad_quote = ["128-71-225-36.broadband.corbina.ru"]
+
 #-------Massives----------------------------
 
-dict_users = {}
-dict_count = {}
 dict_voted = {}
 list_vote_ip = []
 list_users = []
@@ -219,43 +219,7 @@ while True:
 фразой:[!q(номер от 1 до бесконечности) (поисковая фраза)], "например: !q2 ситроен" \
 Добавление цитаты: [!aq (фраза для добавления в цитаты)] \
 Удаление цитаты (доступно только людям из списка): [!dq (номер цитаты)]\r\n' %(name))
-
-    #-----------Anti_flood-------------
-
-    # Count of while.  
-    while_count += 1
-    if while_count == 50:
-        while_count = 0
-        dict_count = {}
-            
-    # Insert nick in dict: dic_count.  
-    if data.find('PRIVMSG') != -1 and name not in dict_count and\
-       name not in list_floodfree:
-        dict_count[name] = int(1)
-        if 'PRIVMSG '+channel in data:
-            where_message = channel
-        elif 'PRIVMSG '+botName in data:
-            where_message = botName
-    
-    # If new message as last message: count +1.  
-    if data.find('PRIVMSG') != -1 and message == dict_users.get(name)\
-       and name not in list_floodfree:
-        dict_count[name] += int(1)
-    
-    # Add key and value in massiv.  
-    if data.find('PRIVMSG') != -1 and name not in list_floodfree:
-        dict_users[name] = message
-    
-    # Message about flood and kick. 
-    if data.find('PRIVMSG') != -1 and name not in list_floodfree:
-        for key in dict_count: 
-            if dict_count[key] == 3 and key != 'none':
-                #send('PRIVMSG '+where_message+' :'+key+', Прекрати флудить!\r\n')
-                dict_count[key] += 1
-            elif dict_count[key] > 5 and key != 'none':                
-                #send('KICK '+channel+' '+key+' :я же сказал не флуди!\r\n')                
-                dict_count[key] = 0
-            
+               
     #--------Request-answer in channel-------------
       
     # Out command.  
@@ -566,9 +530,8 @@ while True:
                     send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
 [{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
                     
-    # Add a new quote
-    switch_add_q = False
-    if f'PRIVMSG {channel} :!aq ' in data:
+    # Add a new quote    
+    if f'PRIVMSG {channel} :!aq ' in data and ip_user not in ip_user_not_ad_quote:
         req_user_quote = data.split('!aq ')[1].strip()
         #if a quote 500-1000 bytes
         try:
