@@ -142,7 +142,10 @@ send_NAMES_on_off = True
 JOIN_time = 0
 
 switch_add_q = False
-ip_user_not_ad_quote = ["128-71-225-36.broadband.corbina.ru"]
+ip_user_not_ad_quote = [
+"128-71-225-36.broadband.corbina.ru",
+"B9gaZ.jwYFs.name"
+]
 
 #-------Massives----------------------------
 
