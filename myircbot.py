@@ -13,20 +13,15 @@ import os
 import copy
 from datetime import datetime
 from random import randint
+import sqlite3
+
 import quote_www
-
 from urllib.parse import unquote
-
-#delate error HTTP request certificate from my local
-#import urllib3
-#urllib3.disable_warnings()
 
 #-------Functions---------------------------
 
 # Function shortening of irc.send. 
-def send(mes):
-    ##if not a PONG send
-    #if 'PONG :' not in mes:
+def send(mes):    
     print(f'>> {mes}')
     return irc.send(bytes(mes,'utf-8'))
 
@@ -79,8 +74,11 @@ def link_title(n):
 #-------Global changes variables------------
 
 # Install min & max timer vote.  
-min_timer = 30
-max_timer = 300
+min_timer = 60
+max_timer = 600
+
+# Time for pause to work with message 
+time_mes_pause = 1
 
 #-------Connect server----------------------
 
@@ -99,7 +97,7 @@ send('NICK '+botName+'\r\n')
 send('USER '+botName+' '+botName+' '+botName+' :Python IRC\r\n')
 send('JOIN '+channel+' \r\n')
 send('NickServ IDENTIFY '+settings.settings('password')+'\r\n')
-#send('MODE '+botName+' +x')
+send('MODE '+botName+' +x')
 
 #-------Global_variables--------------------
    
@@ -141,18 +139,27 @@ t2 = 0
 send_NAMES_on_off = True
 JOIN_time = 0
 
+time_mes = 0
+is_mes_allow = False
+
 switch_add_q = False
 ip_user_not_ad_quote = [
 "128-71-225-36.broadband.corbina.ru",
 "B9gaZ.jwYFs.name"
 ]
 
+tup_user_roles = {'superadmin','user','admin'}
+tup_admins_roles = {'superadmin','admin'}
+where_db = "/root/git/irc_voice_bot/users.db"
+#where_db = "users.db"
+
+user_role = ""
+
 #-------Massives----------------------------
 
 dict_voted = {}
 list_vote_ip = []
 list_users = []
-list_ascces_to_del_quote = ['Think_Ebola']
 
 # List who free from anti-flood function.
 list_floodfree = settings.settings('list_floodfree')
@@ -164,7 +171,7 @@ list_def_from_bots = []
 
 #-------Major_while-------------------------
 
-while True:      
+while True:    
   
     #----------get data message---------- 
     try:
@@ -182,14 +189,46 @@ while True:
     if data.find('PRIVMSG') != -1:
         name = data.split('!',1)[0][1:]
         message = data.split('PRIVMSG',1)[1].split(':',1)[1]
-    try:
+        # that look a server message: ":Кай!uid230437@helmsley.irccloud.com PRIVMSG #bt :text message"
+        ident_user = data.split('!',1)[1].split(' ',1)[0] 
         ip_user=data.split('@',1)[1].split(' ',1)[0]
-    except:
-        print("no ip")
+        
+        # Check is name or ident of user is in the DB:        
+        conn = sqlite3.connect(where_db)
+        cur = conn.cursor()        
+        # Try find user in DB by name:
+        user_role = "guest"
+        try:
+            cur.execute(f"SELECT role from users WHERE name = '{name}'")
+            data_cur = cur.fetchall()
+            if data_cur:
+                user_role = data_cur[0][0]
+            else:
+                 # Try find user in DB by ident:
+                try:
+                    cur.execute(f"SELECT role from users WHERE ident = '{ident_user}'")
+                    data_cur = cur.fetchall()
+                    if data_cur:
+                        user_role = data_cur[0][0]
+                except IndexError:
+                    print(f"***user: {name} is not in DB***")
+        except IndexError:
+            print(f"***user: {ident_user} is not in DB***")
+            
+        print(f"user_role: {user_role}")
+       
+        # Close the DB:
+        conn.close
+        
+        # Check and make pause for work with send message for users:
+        if time.time() > time_mes + time_mes_pause:
+            is_mes_allow = True
+        else:
+            is_mes_allow = False
         
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
-    if ' :!t' in data:
+    if ' :!t' in data and user_role in tup_user_roles and is_mes_allow == True:
         if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
             if 'PRIVMSG '+channel in data:
                 where_message = channel            
@@ -204,20 +243,22 @@ while True:
 
     #-----------Bot_help---------------
 
-    if 'PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' in data:
-        send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
-        send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
+    if ('PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' 
+    in data):
+        if user_role in tup_user_roles and is_mes_allow == True:
+            send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
+            send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
 (пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
 установится на 60 сек\r\n' %(name))
-        #send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
+            #send('NOTICE %s : ***Функция курса: просто пишите (без кавычек): \"!курс\". Писать\
 #можно и в приват боту\r\n' %(name))
-        send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
+            send('NOTICE %s : ***Функция айпи: что бы узнать расположение IP, просто пишите\
 (без кавычек): \"!где (IP)\", пример: \"!где \
 188.00.00.01\". Писать можно и в приват к боту\r\n' %(name))
-        send('NOTICE %s : ***Функция перевода с английских букв на русские \
+            send('NOTICE %s : ***Функция перевода с английских букв на русские \
 : \"!t tekst perevoda\", пример: \"!t ghbdtn , или пишите просто \"!t\" \
 чтобы перевести предыдущее сообщение\r\n' %(name))
-        send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: Случайная цитата: [!q] \
+            send('NOTICE %s : ***Функция цитат: Поиск цитаты по фразе: Случайная цитата: [!q] \
 [!q (фраза поиска для цитаты или её номер)] Поиск следующей цитаты с той же поисковой \
 фразой:[!q(номер от 1 до бесконечности) (поисковая фраза)], "например: !q2 ситроен" \
 Добавление цитаты: [!aq (фраза для добавления в цитаты)] \
@@ -226,7 +267,7 @@ while True:
     #--------Request-answer in channel-------------
       
     # Out command.  
-    if data.find('PRIVMSG '+channel+' :!'+botName+' quit') != -1 and name == masterName:
+    if data.find('PRIVMSG '+channel+' :!'+botName+' quit') != -1 and user_role in tup_admins_roles:
         send('PRIVMSG '+channel+' :Хорошо, всем счастливо оставаться!\r\n')
         
         lock.acquire()
@@ -238,14 +279,15 @@ while True:
 
     # Message per bot.  
     if "PRIVMSG %s :!напиши "%(channel) in data or\
-       "PRIVMSG %s :!напиши "%(botName) in data and name == masterName:
+       "PRIVMSG %s :!напиши "%(botName) in data and user_role in tup_admins_roles:
         mes_per_bot = message.split('!напиши ',1)[1]
         send(mes_per_bot)
         
     #---------Whois servis--------------------------
 
     if 'PRIVMSG '+channel+' :!где' in data\
-      or 'PRIVMSG '+botName+' :!где' in data:
+      or 'PRIVMSG '+botName+' :!где' in data and user_role in tup_user_roles \
+      and is_mes_allow == True:
 
         if 'PRIVMSG '+channel+' :!где' in data:
             where_message_whois = channel
@@ -285,8 +327,11 @@ while True:
         
     #---------Info from link in channel-------------
     
-    if 'PRIVMSG %s :'%(channel) in data and '.png' not in data and '.jpg' not in data and '.doc'\
-        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' not in data and '.pdf' not in data:
+    if 'PRIVMSG %s :'%(channel) in data and user_role in tup_user_roles \
+    and is_mes_allow == True \
+    and '.png' not in data and '.jpg' not in data and '.doc'\
+        not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' \
+        not in data and '.pdf' not in data:
         if 'http://' in data or 'https://' in data or 'www.' in data:
             try:
                 text_title = link_title(data)            
@@ -301,13 +346,14 @@ while True:
     #---------Voting--------------------------------
                 
     t = time.time()
-    if '!стоп опрос' in data and 'PRIVMSG' in data and name == masterName:
+    if '!стоп опрос' in data and 'PRIVMSG' in data and user_role in tup_admins_roles:
         t2 = 0
         print('счетчик опроса сброшен хозяином!\n')
-    if 'PRIVMSG '+channel+' :!опрос ' in data and ip_user not in list_bot_not_work:
+    if 'PRIVMSG '+channel+' :!опрос ' in data and ip_user not in list_bot_not_work and \
+    user_role in tup_user_roles:
         if t2 == 0 or t > t2+time_vote:
             if ' сек ' not in data:
-                time_vote = 60
+                time_vote = 180
                 # Make variable - text-voting-title form massage.  
                 message_voting = message.split('!опрос',1)[1].strip()
             if ' сек ' in data:
@@ -342,7 +388,7 @@ while True:
                 
     # If find '!да' count +1.  
     if data.find('PRIVMSG '+channel+' :!да') != -1 or data.find('PRIVMSG '+botName+' :!да') != -1:
-        if ip_user not in list_vote_ip and t2 != 0:
+        if ip_user not in list_vote_ip and t2 != 0 and user_role in tup_user_roles:
             count_vote_plus +=1
             dict_voted[name] = 'yes'
             list_vote_ip.append(ip_user)
@@ -350,7 +396,8 @@ while True:
             send('NOTICE '+name+' :Ваш ответ \"да\" учтен!\r\n')
 
     # If find '!нет' count +1.  
-    if data.find('PRIVMSG '+channel+' :!нет') != -1 or data.find('PRIVMSG '+botName+' :!нет') != -1:
+    if data.find('PRIVMSG '+channel+' :!нет') != -1 or data.find('PRIVMSG '+botName+' :!нет') != -1 \
+    and user_role in tup_user_roles:
         if ip_user not in list_vote_ip and t2 != 0:
             count_vote_minus +=1
             dict_voted[name] = 'no'
@@ -359,17 +406,19 @@ while True:
             send('NOTICE '+name+' :Ваш ответ \"нет\" учтен!\r\n')
    
     # If masterName send '!список голосования': send to him privat messag with dictonary Who How voted.  
-    if data.find('PRIVMSG '+botName+' :!список опроса') !=-1 and name == masterName:
+    if data.find('PRIVMSG '+botName+' :!список опроса') !=-1 and user_role in tup_admins_roles:
         for i in dict_voted:
             send('PRIVMSG '+masterName+' : '+i+': '+dict_voted[i]+'\r\n')
 
     # Count how much was message in channel '!голосование'.  
-    if data.find('PRIVMSG '+channel+' :!опрос') != -1 and t2 != 0:
+    if data.find('PRIVMSG '+channel+' :!опрос') != -1 and t2 != 0 and user_role in tup_user_roles\
+    and is_mes_allow == True:
         count_voting += 1
 
     # If voting is not end, and users send '!голосование...': send message in channel.  
     t4 = time.time()
-    if data.find('PRIVMSG '+channel+' :!опрос') != -1 and t4-t2 > 5:
+    if data.find('PRIVMSG '+channel+' :!опрос') != -1 and t4-t2 > 5 and user_role in tup_user_roles\
+    and is_mes_allow == True:
         t3 = time.time()
         time_vote_rest_min = (time_vote-(t3-t2))//60
         time_vote_rest_sec = (time_vote-(t3-t2))%60
@@ -468,7 +517,8 @@ while True:
                     count_quote += 1                
     
     # show a random quote
-    if f'PRIVMSG {channel} :!q\r\n' in data:
+    if f'PRIVMSG {channel} :!q\r\n' in data and user_role in tup_user_roles\
+    and is_mes_allow == True:        
         try:
             num_all_q = copy.copy(find_quote('1'))
             random_num_quote = randint(1, (num_all_q[1]))
@@ -485,7 +535,8 @@ while True:
             
         
     # find a quote
-    if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n':
+    if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n' and user_role in tup_user_roles\
+    and is_mes_allow == True:
         try:
             quote_txt_find = data.split('!q ')[1].strip()
             if find_quote(quote_txt_find) == False:
@@ -516,7 +567,8 @@ while True:
         
             
     # find a quote with last request but next quote
-    if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n':
+    if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n' and user_role in tup_user_roles\
+    and is_mes_allow == True:
         if data.split('!q')[1].split(' ')[0].isdigit():
             num_next_quote = data.split('!q')[1].split(' ')[0]            
             quote_txt_find = data.split('!q')[1].split(' ')[1].strip()            
@@ -534,7 +586,8 @@ while True:
 [{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
                     
     # Add a new quote    
-    if f'PRIVMSG {channel} :!aq ' in data and ip_user not in ip_user_not_ad_quote:
+    if f'PRIVMSG {channel} :!aq ' in data and user_role in tup_user_roles and \
+    ip_user not in ip_user_not_ad_quote and is_mes_allow == True:
         req_user_quote = data.split('!aq ')[1].strip()
         #if a quote 500-1000 bytes
         try:
@@ -552,9 +605,8 @@ while True:
         elif req_user_quote[0].isnumeric():
             send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
         else:            
-            with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:
-                
-                f.write(f'\n{channel}|{datetime.now().date()}|{name}|{req_user_quote}')
+            with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:                
+                f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
                 switch_add_q = True                    
                 
         #get and show number of added a quote        
@@ -570,8 +622,7 @@ while True:
         quote_www.makeFileWWW(channel.split('#')[1])
     
     # Delete a quote    
-    if f'PRIVMSG {channel} :!dq' in data:
-        if name == masterName or name in list_ascces_to_del_quote: 
+    if f'PRIVMSG {channel} :!dq' in data and user_role in tup_admins_roles: 
             num_dq = data.split('!dq ')[1].strip()            
             if num_dq.isdigit():
                 data_q = copy.copy(find_quote(num_dq))
@@ -581,13 +632,7 @@ while True:
                     with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:
                         q_file = f.read()                        
                     with open('quotes/'+channel.split('#')[1]+'.txt', 'w', encoding="utf8") as f:
-                        #if delete a last quote - delate and empty string
-                        if str(num_dq) == str(data_q[1]):                            
-                            f.write(q_file.replace(f'\n{data_q[2]}',''))
-                        #if delete not a last quote
-                        else:
-                            print('if delete not a last quote\n')
-                            f.write(q_file.replace(data_q[2],''))                        
+                        f.write(q_file.replace(f'{data_q[2]}',''))                                               
             
                     send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
         
