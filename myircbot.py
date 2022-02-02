@@ -21,7 +21,7 @@ from urllib.parse import unquote
 #-------Functions---------------------------
 
 # Function shortening of irc.send. 
-def send(mes):    
+def send(mes):
     print(f'>> {mes}')
     return irc.send(bytes(mes,'utf-8'))
 
@@ -151,7 +151,7 @@ tup_user_roles = {'superadmin','user','admin'}
 tup_admins_roles = {'superadmin','admin'}
 where_db = "/root/git/irc_bot_voice/users.db"
 #where_db = "users.db"
-where_quotes = f'root/git/quotes/{channel.split("#")[1]}.txt'
+where_quotes = f'/root/git/quotes/{channel.split("#")[1]}.txt'
 
 user_role = ""
 
@@ -477,6 +477,7 @@ while True:
     def find_quote(find_text, num_quote = 1, is_add_quote = False):
         #find numbers of all quotes
         with open(where_quotes, 'r+', encoding="utf8") as f:
+            print(f'***where_quotes: {where_quotes}')
             num_of_all_quotes = 0
             count_twin_q = 0
             count_quote = 1
