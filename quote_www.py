@@ -14,7 +14,7 @@ swapFile = ""
 #----- main ------
 
 def makeFileWWW(channel):
-    inFile = f'quotes/{channel}.txt'
+    inFile = f'/git/quotes/{channel}.txt'
     outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
     #outFile = f'{channel}.html'
     swapFile = ""

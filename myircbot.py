@@ -99,8 +99,7 @@ send('JOIN '+channel+' \r\n')
 send('NickServ IDENTIFY '+settings.settings('password')+'\r\n')
 send('MODE '+botName+' +x')
 
-#-------Global_variables--------------------
-   
+#-------Global_variables--------------------   
 name = ''
 message = ''
 message_voting = ''
@@ -152,6 +151,7 @@ tup_user_roles = {'superadmin','user','admin'}
 tup_admins_roles = {'superadmin','admin'}
 where_db = "/root/git/irc_bot_voice/users.db"
 #where_db = "users.db"
+where_quotes = f'root/git/quotes/{channel.split("#")[1]}.txt'
 
 user_role = ""
 
@@ -476,7 +476,7 @@ while True:
     # func to find a quote    
     def find_quote(find_text, num_quote = 1, is_add_quote = False):
         #find numbers of all quotes
-        with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
+        with open(where_quotes, 'r+', encoding="utf8") as f:
             num_of_all_quotes = 0
             count_twin_q = 0
             count_quote = 1
@@ -486,13 +486,13 @@ while True:
         #find a not digit request for quote        
         if not find_text.isdigit():
             #...find a number of all twins 
-            with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:                                            
+            with open(where_quotes, 'r', encoding="utf8") as f:                                            
                 for line in f:                    
                     if find_text in line:
                         count_twin_q += 1
                             
             #find a quote with user request text
-            with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:                    
+            with open(where_quotes, 'r', encoding="utf8") as f:                    
                     count_next = num_quote
                     if is_add_quote == False:
                         for line in f:
@@ -523,20 +523,26 @@ while True:
                     
         # find a numeric quote            
         else:
-            with open('quotes/'+channel.split('#')[1]+'.txt', 'r+', encoding="utf8") as f:
+            with open(where_quotes, encoding="utf8") as f:
                 for line in f:
                     if int(count_quote) == int(find_text):                        
                         return [count_quote, num_of_all_quotes, line, count_twin_q]
                     count_quote += 1                
     
     # show a random quote
-    if f'PRIVMSG {channel} :!q\r\n' in data and is_mes_allow == True:
+    if f'PRIVMSG {channel} :!q\r\n' in data or f'PRIVMSG {channel} :!lq\r\n' in data or f'PRIVMSG {channel} :!ql\r\n' in data and is_mes_allow == True:
         if is_bot_answer_for_all == True or user_role in tup_user_roles:
             try:
                 num_all_q = copy.copy(find_quote('1'))
                 random_num_quote = randint(1, (num_all_q[1]))
                 data_q = find_quote(str(random_num_quote))
-                #if no time stamp!
+                
+                # Show a Last quote
+                if f'PRIVMSG {channel} :!lq\r\n' in data or f'PRIVMSG {channel} :!ql\r\n' in data:
+                    all_q_for_last_q = data_q[1]
+                    data_q = find_quote(str(all_q_for_last_q))
+                
+                #if no time stamp!                
                 if data_q[2].count("|") == 2: 
                     send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
 {data_q[2].split("|")[2]}\n')
@@ -544,23 +550,7 @@ while True:
                 else:
                     send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
 {data_q[2].split("|")[3]}\n')
-            except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
-            
-        # show a last quote
-        if f'PRIVMSG {channel} :!lq\r\n' in data or f'PRIVMSG {channel} :!q$\r\n' in data or f'PRIVMSG {channel} :!ql\r\n' in data and is_mes_allow == True:
-            if is_bot_answer_for_all == True or user_role in tup_user_roles:
-                try:
-                    num_all_q = copy.copy(find_quote('1'))            
-                    data_q = find_quote(str(num_all_q))
-                    #if no time stamp!
-                    if data_q[2].count("|") == 2: 
-                        send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
-        {data_q[2].split("|")[2]}\n')
-                    #if time stamp in quote file!
-                    else:
-                        send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
-        {data_q[2].split("|")[3]}\n')
-                except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')    
+            except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')         
             
         
     # find a quote
@@ -634,7 +624,7 @@ while True:
             elif req_user_quote[0].isnumeric():
                 send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
             else:            
-                with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:                
+                with open(where_quotes, 'a', encoding="utf8") as f:                
                     f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
                     switch_add_q = True                    
                     
@@ -658,9 +648,9 @@ while True:
                 if data_q == False:
                     send(f'PRIVMSG {channel} :цитаты с таким номером не найдено!\r\n')
                 else:        
-                    with open('quotes/'+channel.split('#')[1]+'.txt', 'r', encoding="utf8") as f:
+                    with open(where_quotes, 'r', encoding="utf8") as f:
                         q_file = f.read()                        
-                    with open('quotes/'+channel.split('#')[1]+'.txt', 'w', encoding="utf8") as f:
+                    with open(where_quotes, 'w', encoding="utf8") as f:
                         f.write(q_file.replace(f'{data_q[2]}',''))                                               
             
                     send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
