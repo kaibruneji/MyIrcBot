@@ -240,7 +240,7 @@ while True:
         
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
-    if ' :t' in data or ' :е' in data and is_mes_allow == True:
+    if ' :t\r\n' in data or ' :е\r\n' in data and is_mes_allow == True:
         if is_bot_answer_for_all == True or user_role in tup_user_roles:            
             if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
                 if 'PRIVMSG '+channel in data:
