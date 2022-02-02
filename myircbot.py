@@ -300,8 +300,7 @@ while True:
 
     if 'PRIVMSG '+channel+' :!где' in data\
       or 'PRIVMSG '+botName+' :!где' in data and is_mes_allow == True:
-        if is_bot_answer_for_all == True or user_role in tup_user_roles:
-            if is_bot_answer_for_all == True
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:           
 
             if 'PRIVMSG '+channel+' :!где' in data:
                 where_message_whois = channel
@@ -341,7 +340,7 @@ while True:
         
     #---------Info from link in channel-------------
     
-    if 'PRIVMSG %s :'%(channel) in data and is_mes_allow == True \    
+    if 'PRIVMSG %s :'%(channel) in data and is_mes_allow == True \
     and '.png' not in data and '.jpg' not in data and '.doc'\
         not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' \
         not in data and '.pdf' not in data:
