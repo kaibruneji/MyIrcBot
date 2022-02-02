@@ -150,10 +150,13 @@ ip_user_not_ad_quote = [
 
 tup_user_roles = {'superadmin','user','admin'}
 tup_admins_roles = {'superadmin','admin'}
-where_db = "/root/git/irc_voice_bot/users.db"
+where_db = "/root/git/irc_bot_voice/users.db"
 #where_db = "users.db"
 
 user_role = ""
+
+command_for_bot_answer_for_all = f'!{botName} silence'
+is_bot_answer_for_all = True
 
 #-------Massives----------------------------
 
@@ -225,27 +228,37 @@ while True:
             is_mes_allow = True
         else:
             is_mes_allow = False
+            
+    #user_role in tup_admins_roles
+    if "PRIVMSG " in data and f":{command_for_bot_answer_for_all}" in data and user_role in tup_admins_roles:
+        if is_bot_answer_for_all == False:
+            is_bot_answer_for_all = True
+            send(f'PRIVMSG {channel} :now {botName} will speaks with every one!\r\n')
+        else:
+            is_bot_answer_for_all = False            
+            send(f'PRIVMSG {channel} :now {botName} will speaks only with friends!\r\n')        
         
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
-    if ' :!t' in data and user_role in tup_user_roles and is_mes_allow == True:
-        if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
-            if 'PRIVMSG '+channel in data:
-                where_message = channel            
-            elif 'PRIVMSG '+botName in data:
-                where_message = name            
-            if '!t ' in data:
-                tr_txt = message.split('!t ',1)[1].strip()
-            else:
-                tr_txt = prev_message
-            res_txt = translate_krzb.tr(tr_txt)
-            send('PRIVMSG '+where_message+' :\x02перевод:\x02 '+res_txt+'\r\n')
+    if ' :t' in data or ' :е' in data and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:            
+            if 'PRIVMSG '+channel in data or 'PRIVMSG '+botName in data:
+                if 'PRIVMSG '+channel in data:
+                    where_message = channel            
+                elif 'PRIVMSG '+botName in data:
+                    where_message = name            
+                if '!t ' in data:
+                    tr_txt = message.split('!t ',1)[1].strip()
+                else:
+                    tr_txt = prev_message
+                res_txt = translate_krzb.tr(tr_txt)
+                send('PRIVMSG '+where_message+' :\x02перевод:\x02 '+res_txt+'\r\n')
 
     #-----------Bot_help---------------
 
     if ('PRIVMSG '+channel+' :!помощь' in data or 'PRIVMSG '+botName+' :!помощь' 
-    in data):
-        if user_role in tup_user_roles and is_mes_allow == True:
+    in data) and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
             send('NOTICE %s : Помощь по командам бота:\r\n' %(name))
             send('NOTICE %s : ***Функция опроса: [!опрос (число) сек (тема опрос)], например\
 (пишем без кавычек: \"!опрос 60 сек Вы любите ониме?\", если не писать время, то время\
@@ -286,62 +299,63 @@ while True:
     #---------Whois servis--------------------------
 
     if 'PRIVMSG '+channel+' :!где' in data\
-      or 'PRIVMSG '+botName+' :!где' in data and user_role in tup_user_roles \
-      and is_mes_allow == True:
+      or 'PRIVMSG '+botName+' :!где' in data and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            if is_bot_answer_for_all == True
 
-        if 'PRIVMSG '+channel+' :!где' in data:
-            where_message_whois = channel
+            if 'PRIVMSG '+channel+' :!где' in data:
+                where_message_whois = channel
+                
+            elif 'PRIVMSG '+botName+' :!где' in data:
+                where_message_whois = name
+                          
+            try:
+                whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
+                get_whois = whois.whois(whois_ip) 
+                
+                country_whois = get_whois['country']
+                city_whois = get_whois['city']
+                address_whois = get_whois['address']    
+                print(get_whois)
+
+                if country_whois == None:
+                    country_whois = 'None'
+                if city_whois == None:
+                    city_whois = 'None'
+                if address_whois == None:
+                    address_whois = 'None'    
+                           
+                whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+                country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
+                send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
+
+            except IndexError:
+                print('except IndexError!')
+                send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+    из цифр, разделенных точками!\r\n')
             
-        elif 'PRIVMSG '+botName+' :!где' in data:
-            where_message_whois = name
-                      
-        try:
-            whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
-            get_whois = whois.whois(whois_ip) 
-            
-            country_whois = get_whois['country']
-            city_whois = get_whois['city']
-            address_whois = get_whois['address']    
-            print(get_whois)
-
-            if country_whois == None:
-                country_whois = 'None'
-            if city_whois == None:
-                city_whois = 'None'
-            if address_whois == None:
-                address_whois = 'None'    
-                       
-            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-            country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
-            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
-
-        except IndexError:
-            print('except IndexError!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
-из цифр, разделенных точками!\r\n')
-        
-        except ValueError:
-            print('except ValueError!')
-            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
-из цифр, разделенных точками!\r\n')
+            except ValueError:
+                print('except ValueError!')
+                send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+    из цифр, разделенных точками!\r\n')
         
     #---------Info from link in channel-------------
     
-    if 'PRIVMSG %s :'%(channel) in data and user_role in tup_user_roles \
-    and is_mes_allow == True \
+    if 'PRIVMSG %s :'%(channel) in data and is_mes_allow == True \    
     and '.png' not in data and '.jpg' not in data and '.doc'\
         not in data and 'tiff' not in data and 'gif' not in data and '.jpeg' \
         not in data and '.pdf' not in data:
-        if 'http://' in data or 'https://' in data or 'www.' in data:
-            try:
-                text_title = link_title(data)            
-                if text_title.strip() != 'None':
-                    send('PRIVMSG %s :%s\r\n'%(channel,text_title))
-            except requests.exceptions.ConnectionError:
-                print('Ошибка получения Title (requests.exceptions.ConnectionError)\n')
-                send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\n')
-            except:
-                print('Error link!\n')   
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            if 'http://' in data or 'https://' in data or 'www.' in data:
+                try:
+                    text_title = link_title(data)            
+                    if text_title.strip() != 'None':
+                        send('PRIVMSG %s :%s\r\n'%(channel,text_title))
+                except requests.exceptions.ConnectionError:
+                    print('Ошибка получения Title (requests.exceptions.ConnectionError)\n')
+                    send('PRIVMSG '+channel+' :Ошибка, возможно такого адреса нет\n')
+                except:
+                    print('Error link!\n')   
                 
     #---------Voting--------------------------------
                 
@@ -517,109 +531,125 @@ while True:
                     count_quote += 1                
     
     # show a random quote
-    if f'PRIVMSG {channel} :!q\r\n' in data and user_role in tup_user_roles\
-    and is_mes_allow == True:        
-        try:
-            num_all_q = copy.copy(find_quote('1'))
-            random_num_quote = randint(1, (num_all_q[1]))
-            data_q = find_quote(str(random_num_quote))
-            #if no time stamp!
-            if data_q[2].count("|") == 2: 
-                send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
+    if f'PRIVMSG {channel} :!q\r\n' in data and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            try:
+                num_all_q = copy.copy(find_quote('1'))
+                random_num_quote = randint(1, (num_all_q[1]))
+                data_q = find_quote(str(random_num_quote))
+                #if no time stamp!
+                if data_q[2].count("|") == 2: 
+                    send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
 {data_q[2].split("|")[2]}\n')
-            #if time stamp in quote file!
-            else:
-                send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
+                #if time stamp in quote file!
+                else:
+                    send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
 {data_q[2].split("|")[3]}\n')
-        except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
+            except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
             
-        
-    # find a quote
-    if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n' and user_role in tup_user_roles\
-    and is_mes_allow == True:
-        try:
-            quote_txt_find = data.split('!q ')[1].strip()
-            if find_quote(quote_txt_find) == False:
-                send(f'PRIVMSG {channel} :такой цитаты не найдено!\n')
-            else:
-                data_q = copy.copy(find_quote(quote_txt_find))
-                #if search by digit
-                if data_q[3] == 0:
+        # show a last quote
+        if f'PRIVMSG {channel} :!lq\r\n' in data or f'PRIVMSG {channel} :!q$\r\n' in data or f'PRIVMSG {channel} :!ql\r\n' in data and is_mes_allow == True:
+            if is_bot_answer_for_all == True or user_role in tup_user_roles:
+                try:
+                    num_all_q = copy.copy(find_quote('1'))            
+                    data_q = find_quote(str(num_all_q))
                     #if no time stamp!
                     if data_q[2].count("|") == 2: 
                         send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
-{data_q[2].split("|")[2]}\n')
+        {data_q[2].split("|")[2]}\n')
                     #if time stamp in quote file!
                     else:
                         send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
+        {data_q[2].split("|")[3]}\n')
+                except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')    
+            
+        
+    # find a quote
+    if f'PRIVMSG {channel} :!q ' in data and data.split('!q ') != '\r\n' and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            try:
+                quote_txt_find = data.split('!q ')[1].strip()
+                if find_quote(quote_txt_find) == False:
+                    send(f'PRIVMSG {channel} :такой цитаты не найдено!\n')
+                else:
+                    data_q = copy.copy(find_quote(quote_txt_find))
+                    #if search by digit
+                    if data_q[3] == 0:
+                        #if no time stamp!
+                        if data_q[2].count("|") == 2: 
+                            send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]})\x03 \
+{data_q[2].split("|")[2]}\n')
+                        #if time stamp in quote file!
+                        else:
+                            send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]})\x03 \
 {data_q[2].split("|")[3]}\n')
-                #if search by string
+                    #if search by string
+                    else:
+                        #if no time stamp!
+                        if data_q[2].count("|") == 2:
+                            send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
+[{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
+                        #if time stamp in quote file!
+                        else:
+                            send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
+[{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
+            except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
+        
+            
+    # find a quote with last request but next quote
+    if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n' and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            if data.split('!q')[1].split(' ')[0].isdigit():
+                num_next_quote = data.split('!q')[1].split(' ')[0]            
+                quote_txt_find = data.split('!q')[1].split(' ')[1].strip()            
+                data_q = copy.copy(find_quote(quote_txt_find, int(num_next_quote)))
+                if data_q == False:
+                    send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
                 else:
                     #if no time stamp!
                     if data_q[2].count("|") == 2:
                         send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-[{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
+[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
                     #if time stamp in quote file!
                     else:
                         send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
-[{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
-        except: send(f'PRIVMSG {channel} :ошибка показа цитаты!\n')
-        
-            
-    # find a quote with last request but next quote
-    if f'PRIVMSG {channel} :!q' in data and data.split('!q')[1] != '\r\n' and user_role in tup_user_roles\
-    and is_mes_allow == True:
-        if data.split('!q')[1].split(' ')[0].isdigit():
-            num_next_quote = data.split('!q')[1].split(' ')[0]            
-            quote_txt_find = data.split('!q')[1].split(' ')[1].strip()            
-            data_q = copy.copy(find_quote(quote_txt_find, int(num_next_quote)))
-            if data_q == False:
-                send(f'PRIVMSG {channel} :такой цитаты не найдено!\r\n')
-            else:
-                #if no time stamp!
-                if data_q[2].count("|") == 2:
-                    send(f'PRIVMSG {channel} :\x0314({data_q[0]}/{data_q[1]} {data_q[2].split("|")[1]}) \
-[{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[2]}\n')
-                #if time stamp in quote file!
-                else:
-                    send(f'PRIVMSG {channel} :\x0314{data_q[2].split("|")[1]}:({data_q[0]}/{data_q[1]} {data_q[2].split("|")[2]}) \
 [{num_next_quote}/{data_q[3]}]\x03 {data_q[2].split("|")[3]}\n')
                     
     # Add a new quote    
-    if f'PRIVMSG {channel} :!aq ' in data and user_role in tup_user_roles and \
-    ip_user not in ip_user_not_ad_quote and is_mes_allow == True:
-        req_user_quote = data.split('!aq ')[1].strip()
-        #if a quote 500-1000 bytes
-        try:
-            quote_rart_1 = req_user_quote.split('\r\n')[0]
-            quote_rart_2 = req_user_quote.split(f'PRIVMSG {channel} :')[1]
-            req_user_quote = quote_rart_1 + quote_rart_2
-        except:
-            print("add a single quote\n")
+    if f'PRIVMSG {channel} :!aq ' in data and ip_user not in ip_user_not_ad_quote and is_mes_allow == True:
+        if is_bot_answer_for_all == True or user_role in tup_user_roles:
+            req_user_quote = data.split('!aq ')[1].strip()
+            #if a quote 500-1000 bytes
+            try:
+                quote_rart_1 = req_user_quote.split('\r\n')[0]
+                quote_rart_2 = req_user_quote.split(f'PRIVMSG {channel} :')[1]
+                req_user_quote = quote_rart_1 + quote_rart_2
+            except:
+                print("add a single quote\n")
+            
+            #add a quote
+            if '|' in req_user_quote:
+                send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')            
+            elif req_user_quote == '':
+                send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
+            elif req_user_quote[0].isnumeric():
+                send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
+            else:            
+                with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:                
+                    f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
+                    switch_add_q = True                    
+                    
+            #get and show number of added a quote        
+            if switch_add_q == True:        
+                data_q = copy.copy(find_quote(req_user_quote, 1, True))
+                if data_q == False:    
+                    send(f'PRIVMSG {channel} :цитата добавлена, но его номер не получен\n')
+                else:
+                    send(f'PRIVMSG {channel} :цитата добавлена под номером {data_q[0]}\n')
+                switch_add_q = False
         
-        #add a quote
-        if '|' in req_user_quote:
-            send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')            
-        elif req_user_quote == '':
-            send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
-        elif req_user_quote[0].isnumeric():
-            send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
-        else:            
-            with open('quotes/'+channel.split('#')[1]+'.txt', 'a', encoding="utf8") as f:                
-                f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
-                switch_add_q = True                    
-                
-        #get and show number of added a quote        
-        if switch_add_q == True:        
-            data_q = copy.copy(find_quote(req_user_quote, 1, True))
-            if data_q == False:    
-                send(f'PRIVMSG {channel} :цитата добавлена, но его номер не получен\n')
-            else:
-                send(f'PRIVMSG {channel} :цитата добавлена под номером {data_q[0]}\n')
-            switch_add_q = False
-        
-        #rewrite a file quotes for www
-        quote_www.makeFileWWW(channel.split('#')[1])
+            #rewrite a file quotes for www
+            quote_www.makeFileWWW(channel.split('#')[1])
     
     # Delete a quote    
     if f'PRIVMSG {channel} :!dq' in data and user_role in tup_admins_roles: 
