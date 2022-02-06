@@ -14,6 +14,7 @@ import copy
 from datetime import datetime
 from random import randint
 import sqlite3
+import translit
 
 import quote_www
 from urllib.parse import unquote
@@ -147,8 +148,13 @@ ip_user_not_ad_quote = [
 "B9gaZ.jwYFs.name"
 ]
 
-tup_user_roles = {'superadmin','user','admin'}
-tup_admins_roles = {'superadmin','admin'}
+tup_user_roles = ('superadmin','user','admin')
+tup_admins_roles = ('superadmin','admin')
+
+tup_translit_users = ('prosta_vapse','Tupoy')
+command_for_on_off_translit = '!translit'
+is_translit_on = True
+
 where_db = "/root/git/irc_bot_voice/users.db"
 #where_db = "users.db"
 where_quotes = f'/root/git/quotes/{channel.split("#")[1]}.txt'
@@ -236,7 +242,15 @@ while True:
             send(f'PRIVMSG {channel} :now {botName} will speaks with every one!\r\n')
         else:
             is_bot_answer_for_all = False            
-            send(f'PRIVMSG {channel} :now {botName} will speaks only with friends!\r\n')        
+            send(f'PRIVMSG {channel} :now {botName} will speaks only with friends!\r\n') 
+
+    if "PRIVMSG " in data and f":{command_for_on_off_translit}" in data and user_role in tup_admins_roles or name in tup_translit_users:
+        if is_translit_on == False:
+            is_translit_on = True
+            send(f'PRIVMSG {channel} :now translit On!\r\n')
+        else:
+            is_translit_on = False            
+            send(f'PRIVMSG {channel} :now translit Off!\r\n')
         
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
@@ -253,6 +267,11 @@ while True:
                     tr_txt = prev_message
                 res_txt = translate_krzb.tr(tr_txt)
                 send('PRIVMSG '+where_message+' :\x02перевод:\x02 '+res_txt+'\r\n')
+                
+    #-----------Translit----------------
+
+    if is_translit_on == True and f'PRIVMSG {channel} :{command_for_on_off_translit}\r\n' and name in tup_translit_users:
+        send(f'PRIVMSG {channel} :by {name} {translit.func_translit(message)}\r\n')
 
     #-----------Bot_help---------------
 
