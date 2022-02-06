@@ -154,6 +154,7 @@ tup_admins_roles = ('superadmin','admin')
 tup_translit_users = ('prosta_vapse','Tupoy')
 command_for_on_off_translit = '!translit'
 is_translit_on = True
+is_translit_on_admin = True
 
 where_db = "/root/git/irc_bot_voice/users.db"
 #where_db = "users.db"
@@ -246,13 +247,23 @@ while True:
 
     #Translit On or Off
     if f"PRIVMSG {channel} :{command_for_on_off_translit}\r\n" in data:
-        if user_role in tup_admins_roles or name in tup_translit_users:
+        if name in tup_translit_users:
             if is_translit_on == False:
                 is_translit_on = True
                 send(f'PRIVMSG {channel} :now translit On!\r\n')
             else:
                 is_translit_on = False            
                 send(f'PRIVMSG {channel} :now translit Off!\r\n')
+                
+    #Translit On or Off by Admin!
+    if f"PRIVMSG {channel} :{command_for_on_off_translit}\r\n" in data:
+        if user_role in tup_admins_roles:
+            if is_translit_on_admin == False:
+                is_translit_on_admin = True
+                send(f'PRIVMSG {channel} :now translit admin On!\r\n')
+            else:
+                is_translit_on_admin = False            
+                send(f'PRIVMSG {channel} :now translit admin Off!\r\n')            
         
     #-----------Translate_krzb---------
     #if a user inter a command !t and text for translate
@@ -271,9 +282,10 @@ while True:
                 send('PRIVMSG '+where_message+' :\x02перевод:\x02 '+res_txt+'\r\n')
                 
     #-----------Translit----------------
-
-    if is_translit_on == True and f"PRIVMSG {channel} :" and name in tup_translit_users:    
-        send(f'PRIVMSG {channel} :\x037by {name}:\x03 {translit.func_translit(message)}\r\n')
+    
+    if is_translit_on_admin == True:
+        if is_translit_on == True and f"PRIVMSG {channel} :" and name in tup_translit_users:    
+            send(f'PRIVMSG {channel} :\x037by {name}:\x03 {translit.func_translit(message)}\r\n')
 
     #-----------Bot_help---------------
 
