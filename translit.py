@@ -10,6 +10,6 @@ def func_translit(get_message):
         if i not in dict_translit:
             list_translit_message.append(i)
         if i in dict_translit:
-            list_translit_message.append(dict_translit.get(i[, default]))
+            list_translit_message.append(dict_translit.get(i))
     return list_translit_message
         
