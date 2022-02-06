@@ -11,5 +11,5 @@ def func_translit(get_message):
         if i in dict_translit:
             list_translit_message.append(dict_translit.get(i))
     translit_message = "".join(list_translit_message)
-    return list_translit_message
+    return translit_message
         
