@@ -246,7 +246,7 @@ while True:
             send(f'PRIVMSG {channel} :now {botName} will speaks only with friends!\r\n') 
 
     #Translit On or Off
-    if f"PRIVMSG {channel} :{command_for_on_off_translit}\r\n" in data:
+    if is_translit_on_admin = True and f"PRIVMSG {channel} :{command_for_on_off_translit}\r\n" in data:
         if name in tup_translit_users:
             if is_translit_on == False:
                 is_translit_on = True
