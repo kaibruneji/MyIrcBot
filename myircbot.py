@@ -236,7 +236,7 @@ while True:
             is_mes_allow = False
             
     #user_role in tup_admins_roles
-    if "PRIVMSG " in data and f":{command_for_bot_answer_for_all}" in data and user_role in tup_admins_roles:
+    if f"PRIVMSG {channel} :{command_for_bot_answer_for_all}\r\n" in data and user_role in tup_admins_roles:
         if is_bot_answer_for_all == False:
             is_bot_answer_for_all = True
             send(f'PRIVMSG {channel} :now {botName} will speaks with every one!\r\n')
@@ -244,7 +244,8 @@ while True:
             is_bot_answer_for_all = False            
             send(f'PRIVMSG {channel} :now {botName} will speaks only with friends!\r\n') 
 
-    if "PRIVMSG " in data and f":{command_for_on_off_translit}" in data and user_role in tup_admins_roles or name in tup_translit_users:
+    #Translit On or Off
+    if f"PRIVMSG {channel} :{command_for_on_off_translit}\r\n" in data and user_role in tup_admins_roles or name in tup_translit_users:
         if is_translit_on == False:
             is_translit_on = True
             send(f'PRIVMSG {channel} :now translit On!\r\n')
@@ -270,7 +271,7 @@ while True:
                 
     #-----------Translit----------------
 
-    if is_translit_on == True and f'PRIVMSG {channel} :{command_for_on_off_translit}\r\n' and name in tup_translit_users:
+    if is_translit_on == True and name in tup_translit_users:
         send(f'PRIVMSG {channel} :by {name} {translit.func_translit(message)}\r\n')
 
     #-----------Bot_help---------------
