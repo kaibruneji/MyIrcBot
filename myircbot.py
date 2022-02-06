@@ -273,7 +273,7 @@ while True:
     #-----------Translit----------------
 
     if is_translit_on == True and name in tup_translit_users:
-        send(f'PRIVMSG {channel} :by {name} {translit.func_translit(message)}\r\n')
+        send(f'PRIVMSG {channel} :\x037by {name}\x03 {translit.func_translit(message)}\r\n')
 
     #-----------Bot_help---------------
 
