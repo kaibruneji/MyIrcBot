@@ -1,4 +1,5 @@
 #-------Import modules---------------------
+#-------Import modules---------------------
 import socket
 import sys
 import time
@@ -156,7 +157,7 @@ command_for_on_off_translit = '!translit'
 is_translit_on = True
 is_translit_on_admin = True
 
-where_db = "/root/git/irc_bot_voice/users.db"
+where_db = "/root/git/users.db"
 #where_db = "users.db"
 where_quotes = f'/root/git/quotes/{channel.split("#")[1]}.txt'
 
