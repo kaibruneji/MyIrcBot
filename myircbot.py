@@ -154,8 +154,8 @@ tup_admins_roles = ('superadmin','admin')
 
 tup_translit_users = ('prosta_vapse','Tupoy')
 command_for_on_off_translit = '!translit'
-is_translit_on = True
-is_translit_on_admin = True
+is_translit_on = False
+is_translit_on_admin = False
 
 where_db = "/root/git/users.db"
 #where_db = "users.db"
@@ -358,9 +358,9 @@ while True:
                 if address_whois == None:
                     address_whois = 'None'    
                            
-                whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-                country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
-                send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
+                #whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+                #country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
+                send('PRIVMSG '+where_message_whois+' :'+get_whois+' \r\n')        
 
             except IndexError:
                 print('except IndexError!')
