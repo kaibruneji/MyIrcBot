@@ -358,9 +358,9 @@ while True:
                 if address_whois == None:
                     address_whois = 'None'    
                            
-                #whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-                #country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
-                send('PRIVMSG '+where_message_whois+' :'+get_whois+' \r\n')        
+                whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+                country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
+                send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
 
             except IndexError:
                 print('except IndexError!')
