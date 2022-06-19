@@ -662,7 +662,7 @@ while True:
             quote_www.makeFileWWW(channel.split('#')[1])
     
     # Delete a quote    
-    if f'PRIVMSG {channel} :!dq' in data and user_role in tup_admins_roles: 
+    if f'PRIVMSG {channel} :!dq ' in data and user_role in tup_admins_roles: 
             num_dq = data.split('!dq ')[1].strip()            
             if num_dq.isdigit():
                 data_q = copy.copy(find_quote(num_dq))
