@@ -638,12 +638,12 @@ while True:
                 print("add a single quote\n")
             
             #add a quote
-            if '|' in req_user_quote:
-                send(f'PRIVMSG {channel} :в цитату нельзя добавлять символ "|"!\n')            
+            if '|' in req_user_quote or '<' in req_user_quote or '>' in req_user_quote:
+                send(f'PRIVMSG {channel} :в цитату нельзя добавлять символы "|, <, > "!\n')            
             elif req_user_quote == '':
                 send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
             elif req_user_quote[0].isnumeric():
-                send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
+                send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')                
             else:            
                 with open(where_quotes, 'a', encoding="utf8") as f:                
                     f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
