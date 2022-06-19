@@ -14,20 +14,19 @@ swapFile = ""
 #----- main ------
 
 def makeFileWWW(channel):
-    #inFile = f'/root/git/quotes/{channel}.txt'
-    #outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
-    #outFile = f'{channel}.html'    
-    
+    inFile = f'/root/git/quotes/{channel}.txt'
+    outFile = f'/var/www/oldrazor.ru/public_html/{channel}.html'
+    #outFile = f'{channel}.html'
     swapFile = ""
     
     with open(inFile, 'r', encoding='utf8') as f:  
         swapFile = f.read()
     
-    reFile = re.sub(f'#{channel}','</p><p>',swapFile)
+    reFile = re.sub('#{channel}','</p><p>',swapFile)
+    reFile = re.sub('<','|',swapFile)
+    reFile = re.sub('>','|',swapFile)
      
     with open(outFile, 'w', encoding='utf-8') as f:
         f.write(f'<html>\n<head><title>\nquotes of #magi\n</title>\n\
         <meta charset="utf-8">\n<meta name="robots" content="noindex"/>\n\
         </head>\n<body>\n<p>{reFile}\n</p>\n</body>\n</html>')
-   
-   
