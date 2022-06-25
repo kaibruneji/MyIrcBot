@@ -333,30 +333,43 @@ while True:
     #---------Whois servis--------------------------
 
     if 'PRIVMSG '+channel+' :!где' in data\
-      or 'PRIVMSG '+botName+' :!где' in data and is_mes_allow == True:
-        if is_bot_answer_for_all == True or user_role in tup_user_roles:           
+      or 'PRIVMSG '+botName+' :!где' in data:
 
-            if 'PRIVMSG '+channel+' :!где' in data:
-                where_message_whois = channel
-                
-            elif 'PRIVMSG '+botName+' :!где' in data:
-                where_message_whois = name
-                          
-            try:
-                whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
-                get_whois = whois.whois(whois_ip)                           
-                
-                send('PRIVMSG '+where_message_whois+' :'+get_whois+' \r\n')        
-
-            except IndexError:
-                print('except IndexError!')
-                send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
-    из цифр, разделенных точками!\r\n')
+        if 'PRIVMSG '+channel+' :!где' in data:
+            where_message_whois = channel
             
-            except ValueError:
-                print('except ValueError!')
-                send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
-    из цифр, разделенных точками!\r\n')
+        elif 'PRIVMSG '+botName+' :!где' in data:
+            where_message_whois = name
+                      
+        try:
+            whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
+            get_whois = whois.whois(whois_ip) 
+            
+            country_whois = get_whois['country']
+            city_whois = get_whois['city']
+            address_whois = get_whois['address']    
+            print(get_whois)
+
+            if country_whois == None:
+                country_whois = 'None'
+            if city_whois == None:
+                city_whois = 'None'
+            if address_whois == None:
+                address_whois = 'None'    
+                       
+            whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
+            country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
+            send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
+
+        except IndexError:
+            print('except IndexError!')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+из цифр, разделенных точками!\r\n')
+        
+        except ValueError:
+            print('except ValueError!')
+            send('PRIVMSG '+where_message_whois+' :Ошибка! Вводите только IP адрес \
+из цифр, разделенных точками!\r\n')
         
     #---------Info from link in channel-------------
     
