@@ -157,8 +157,8 @@ command_for_on_off_translit = '!translit'
 is_translit_on = False
 is_translit_on_admin = False
 
-where_db = "/root/git/users.db"
-#where_db = "users.db"
+#where_db = "/root/git/users.db"
+where_db = "users.db"
 where_quotes = f'/root/git/quotes/{channel.split("#")[1]}.txt'
 
 user_role = ""
@@ -344,23 +344,9 @@ while True:
                           
             try:
                 whois_ip = data.split('!где ',1)[1].split('\r',1)[0].strip()
-                get_whois = whois.whois(whois_ip) 
+                get_whois = whois.whois(whois_ip)                           
                 
-                country_whois = get_whois['country']
-                city_whois = get_whois['city']
-                address_whois = get_whois['address']    
-                print(get_whois)
-
-                if country_whois == None:
-                    country_whois = 'None'
-                if city_whois == None:
-                    city_whois = 'None'
-                if address_whois == None:
-                    address_whois = 'None'    
-                           
-                whois_final_reply = ' \x02IP:\x02 '+whois_ip+' \x02Страна:\x02 '+\
-                country_whois+' \x02Город:\x02 '+city_whois+' \x02Адресс:\x02 '+address_whois
-                send('PRIVMSG '+where_message_whois+' :'+whois_final_reply+' \r\n')        
+                send('PRIVMSG '+where_message_whois+' :'+get_whois+' \r\n')        
 
             except IndexError:
                 print('except IndexError!')
@@ -531,7 +517,7 @@ while True:
                     count_next = num_quote
                     if is_add_quote == False:
                         for line in f:
-                            if find_text in line: 
+                            if find_text in line.lower(): 
                                 if count_next == 1:                                
                                     return [count_quote, num_of_all_quotes, line, count_twin_q]                                
                                 else:
@@ -657,7 +643,7 @@ while True:
             elif req_user_quote == '':
                 send(f'PRIVMSG {channel} :нельзя вводить пустое сообщение!\n')
             elif req_user_quote[0].isnumeric():
-                send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')
+                send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')                
             else:            
                 with open(where_quotes, 'a', encoding="utf8") as f:                
                     f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
@@ -676,7 +662,7 @@ while True:
             quote_www.makeFileWWW(channel.split('#')[1])
     
     # Delete a quote    
-    if f'PRIVMSG {channel} :!dq' in data and user_role in tup_admins_roles: 
+    if f'PRIVMSG {channel} :!dq ' in data and user_role in tup_admins_roles: 
             num_dq = data.split('!dq ')[1].strip()            
             if num_dq.isdigit():
                 data_q = copy.copy(find_quote(num_dq))
