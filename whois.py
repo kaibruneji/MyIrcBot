@@ -7,5 +7,5 @@ def whois(ip):
     country = data['nets'][0]['country']
     city = data['nets'][0]['city']    
     address = data['nets'][0]['address']
-    return {'region' region,'city': city, 'country': country, 'address': address}
+    return {'region': region,'city': city, 'country': country, 'address': address}
     
