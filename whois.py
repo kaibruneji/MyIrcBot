@@ -8,6 +8,5 @@ def whois(ip):
         city = data['nets'][0]['city']    
         address = data['nets'][0]['address']
         return {'city': city, 'country': country, 'address': address}
-    except:
-        ipwhois.exceptions.IPDefinedError:
-            print("***ipwhois.exceptions.IPDefinedError!***")
+    except ipwhois.exceptions.IPDefinedError:        
+        print("***ipwhois.exceptions.IPDefinedError!***")
