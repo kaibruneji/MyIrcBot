@@ -157,8 +157,8 @@ command_for_on_off_translit = '!translit'
 is_translit_on = False
 is_translit_on_admin = False
 
-#where_db = "/root/git/users.db"
-where_db = "users.db"
+where_db = "/root/git/users.db"
+#where_db = "users.db"
 where_quotes = f'/root/git/quotes/{channel.split("#")[1]}.txt'
 
 user_role = ""
