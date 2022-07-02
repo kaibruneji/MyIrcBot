@@ -534,6 +534,7 @@ while True:
             with open(where_quotes, 'r', encoding="utf8") as f:                    
                     count_next = num_quote
                     if is_add_quote == False:
+                        find_text = find_text.lower()
                         for line in f:
                             if find_text in line.lower(): 
                                 if count_next == 1:                                
