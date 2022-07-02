@@ -513,6 +513,7 @@ while True:
     
     # func to find a quote    
     def find_quote(find_text, num_quote = 1, is_add_quote = False):
+        find_text = find_text.lower()
         #find numbers of all quotes
         with open(where_quotes, 'r+', encoding="utf8") as f:
             print(f'***where_quotes: {where_quotes}')
@@ -527,14 +528,13 @@ while True:
             #...find a number of all twins 
             with open(where_quotes, 'r', encoding="utf8") as f:                                            
                 for line in f:                    
-                    if find_text in line:
+                    if find_text in lower():
                         count_twin_q += 1
                             
             #find a quote with user request text
             with open(where_quotes, 'r', encoding="utf8") as f:                    
                     count_next = num_quote
-                    if is_add_quote == False:
-                        find_text = find_text.lower()
+                    if is_add_quote == False:                        
                         for line in f:
                             if find_text in line.lower(): 
                                 if count_next == 1:                                
