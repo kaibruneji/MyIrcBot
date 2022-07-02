@@ -528,7 +528,7 @@ while True:
             #...find a number of all twins 
             with open(where_quotes, 'r', encoding="utf8") as f:                                            
                 for line in f:                    
-                    if find_text in lower():
+                    if find_text in line.lower():
                         count_twin_q += 1
                             
             #find a quote with user request text
