@@ -665,7 +665,7 @@ while True:
                 send(f'PRIVMSG {channel} :нельзя вводить первым символом цифру!\n')                
             else:            
                 with open(where_quotes, 'a', encoding="utf8") as f:                
-                    f.write(f'{channel}|{datetime.now().date()}|{name}|{req_user_quote}\n')
+                    f.write(f'|{datetime.now().date()}|{name}|{req_user_quote}\n')
                     switch_add_q = True                    
                     
             #get and show number of added a quote        
