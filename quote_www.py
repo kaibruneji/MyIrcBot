@@ -22,9 +22,10 @@ def makeFileWWW(channel):
     with open(inFile, 'r', encoding='utf8') as f:  
         swapFile = f.read()    
 
-    reFile = re.sub('script','хуй',swapFile)
+    reFile = re.sub('<','&lt',swapFile)
+    reFile = re.sub('>','&gt',swapFile)
     #reFile = re.sub('>','}',reFile)
-    reFile = re.sub(f'#{channel}','</p><p>',reFile)
+    reFile = re.sub('/n','</p><p>',reFile)
      
     with open(outFile, 'w', encoding='utf-8') as f:
         f.write(f'<html>\n<head><title>\nquotes of #magi\n</title>\n\
