@@ -691,9 +691,11 @@ while True:
                     with open(where_quotes, 'r', encoding="utf8") as f:
                         q_file = f.read()                        
                     with open(where_quotes, 'w', encoding="utf8") as f:
-                        f.write(q_file.replace(f'{data_q[2]}',''))                                               
-                    send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
-        
+                        try:
+                            f.write(q_file.replace(f'{data_q[2]}',''))                                               
+                            send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
+                        except TypeError:
+                            send('PRIVMSG '+channel+' :ошибка удаления, превышение предела!\r\n')
             else:
                 send('PRIVMSG '+channel+' :нужно ввести номер цитаты для удаления!\r\n')            
     
