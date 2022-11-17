@@ -21,10 +21,9 @@ def makeFileWWW(channel):
     
     with open(inFile, 'r', encoding='utf8') as f:  
         swapFile = f.read()    
-
-    reFile = re.sub('Кай','кай_01',swapFile)    
+   
     reFile = re.sub('<','&lt;',swapFile)
-    reFile = re.sub('>','&gt;',swapFile)    
+    reFile = re.sub('>','&gt;',reFile)    
     reFile = re.sub('\n','</p><p>',reFile)
      
     with open(outFile, 'w', encoding='utf-8') as f:
