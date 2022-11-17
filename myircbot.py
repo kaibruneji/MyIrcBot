@@ -691,8 +691,10 @@ while True:
                     with open(where_quotes, 'r', encoding="utf8") as f:
                         q_file = f.read()                        
                     with open(where_quotes, 'w', encoding="utf8") as f:
-                        f.write(q_file.replace(f'{data_q[2]}',''))                                               
-            
+                        try:
+                            f.write(q_file.replace(f'{data_q[2]}',''))                                               
+                        except TypeError:
+                            print("error: end of quotes!!!\n")
                     send(f'PRIVMSG {channel} :цитата удалена!\r\n')            
         
             else:
